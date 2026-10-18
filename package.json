@@ -1,0 +1,12 @@
+{
+  "name": "financas-pro",
+  "version": "1.0.0",
+  "description": "Sistema de Controle Financeiro SaaS",
+  "private": true,
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "dependencies": {
+    "serve": "^14.2.1"
+  }
+}
