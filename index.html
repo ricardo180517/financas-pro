@@ -36,14 +36,21 @@
                 <button type="button" class="md:hidden text-slate-400 hover:text-white text-xl px-2" onclick="window.toggleSidebar()">✕</button>
             </div>
 
-            <div class="p-4">
-                <button type="button" onclick="window.abrirModalTransacao('despesa')" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2">
+            <div class="p-4 space-y-2">
+                <button type="button" onclick="window.abrirModalTransacao('despesa')" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2">
                     <span>➕</span> Novo Lançamento
+                </button>
+                <button type="button" onclick="window.abrirModalNovaContaPagar()" class="w-full py-2 px-4 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-2">
+                    <span>📅</span> + Conta a Pagar
                 </button>
             </div>
 
             <nav class="px-3 space-y-1">
                 <button type="button" onclick="window.navegar('dashboard')" id="nav-dashboard" class="nav-btn active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-slate-300 transition text-left"><span>📊</span> Visão Geral</button>
+                <button type="button" onclick="window.navegar('contas_pagar')" id="nav-contas_pagar" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm text-slate-300 transition text-left">
+                    <span class="flex items-center gap-3"><span>📅</span> Contas a Pagar</span>
+                    <span id="badgeMenuContasPagar" class="hidden px-2 py-0.5 text-[10px] font-bold bg-amber-500/20 text-amber-300 rounded-full">0</span>
+                </button>
                 <button type="button" onclick="window.navegar('lancamentos')" id="nav-lancamentos" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-slate-300 transition text-left"><span>📑</span> Extrato / Lançamentos</button>
                 <button type="button" onclick="window.navegar('receitas')" id="nav-receitas" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-slate-300 transition text-left"><span>📈</span> Receitas</button>
                 <button type="button" onclick="window.navegar('despesas')" id="nav-despesas" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-slate-300 transition text-left"><span>📉</span> Despesas</button>
@@ -111,7 +118,7 @@
                         <p class="text-xs text-rose-300/80" id="descAtrasados">Verifique suas contas a pagar.</p>
                     </div>
                 </div>
-                <button type="button" onclick="window.navegar('lancamentos')" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shrink-0">Resolver Pendências</button>
+                <button type="button" onclick="window.navegar('contas_pagar')" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shrink-0">Ver Contas a Pagar</button>
             </div>
 
             <!-- 5 KPIs -->
@@ -120,7 +127,7 @@
                     <div>
                         <p class="text-slate-400 text-[11px] font-medium uppercase">Saldo em Contas</p>
                         <h3 id="kpiSaldoContas" class="valor-sensivel text-xl font-bold text-white mt-1">R$ 0,00</h3>
-                        <span id="kpiPrevistoContas" class="valor-sensivel text-[11px] text-slate-400">Previsto: R$ 0,00</span>
+                        <span id="kpiPrevistoContas" class="valor-sensivel text-[11px] text-slate-400">Após contas: R$ 0,00</span>
                     </div>
                     <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-lg">🏦</div>
                 </div>
@@ -164,6 +171,7 @@
                     <div class="flex flex-wrap justify-between items-center gap-2">
                         <h3 class="text-sm font-semibold text-slate-200">Minhas Contas e Cartões</h3>
                         <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="window.abrirModalNovaContaPagar()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium">📅 + Conta a Pagar</button>
                             <button type="button" onclick="window.abrirModalTransacao('receita')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-medium">+ Receita</button>
                             <button type="button" onclick="window.abrirModalTransacao('despesa')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-medium">+ Despesa / Parcelado</button>
                         </div>
@@ -191,6 +199,73 @@
                 </div>
             </div>
 
+            <!-- NOVA ABA: CONTAS A PAGAR -->
+            <div id="view-contas_pagar" class="hidden space-y-6">
+                <!-- Resumo de Contas a Pagar do Mês -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="card p-4 rounded-2xl border-l-4 border-l-amber-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-amber-400 font-semibold uppercase">Em Aberto no Mês (A Pagar)</p>
+                            <h4 id="resumoPagarAberto" class="valor-sensivel text-xl font-bold text-white mt-1">R$ 0,00</h4>
+                            <span id="qtdPagarAberto" class="text-[11px] text-slate-400">0 conta(s) aguardando pagamento</span>
+                        </div>
+                        <div class="text-2xl">⏳</div>
+                    </div>
+                    <div class="card p-4 rounded-2xl border-l-4 border-l-rose-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-rose-400 font-semibold uppercase">Vencidas / Em Atraso</p>
+                            <h4 id="resumoPagarVencido" class="valor-sensivel text-xl font-bold text-rose-400 mt-1">R$ 0,00</h4>
+                            <span id="qtdPagarVencido" class="text-[11px] text-slate-400">0 conta(s) vencida(s)</span>
+                        </div>
+                        <div class="text-2xl">⚠️</div>
+                    </div>
+                    <div class="card p-4 rounded-2xl border-l-4 border-l-emerald-500 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-emerald-400 font-semibold uppercase">Contas Já Pagas no Mês</p>
+                            <h4 id="resumoPagarPago" class="valor-sensivel text-xl font-bold text-emerald-400 mt-1">R$ 0,00</h4>
+                            <span id="qtdPagarPago" class="text-[11px] text-slate-400">Já descontadas do saldo bancário</span>
+                        </div>
+                        <div class="text-2xl">✅</div>
+                    </div>
+                </div>
+
+                <div class="card p-5 rounded-2xl space-y-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">📅 Programação de Contas a Pagar</h3>
+                            <p class="text-xs text-slate-400">Cadastre suas contas previstas (financiamento, boletos, luz, etc.). O valor <strong class="text-amber-300">só é descontado do banco</strong> quando você clicar em <strong class="text-emerald-400">"Pagar / Dar Baixa"</strong>.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <select id="filtroStatusContasPagar" onchange="window.renderizarContasPagar()" class="px-3 py-2 rounded-xl text-xs">
+                                <option value="todas">Mostrar: Todas do Mês</option>
+                                <option value="abertas">Apenas Em Aberto</option>
+                                <option value="pagas">Apenas Pagas</option>
+                            </select>
+                            <button type="button" onclick="window.abrirModalNovaContaPagar()" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-amber-600/20 flex items-center gap-1.5">
+                                <span>➕</span> Nova Conta a Pagar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 text-xs uppercase">
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Vencimento / Pagamento</th>
+                                    <th class="py-3 px-4">Descrição da Conta</th>
+                                    <th class="py-3 px-4">Categoria</th>
+                                    <th class="py-3 px-4">Banco Utilizado</th>
+                                    <th class="py-3 px-4 text-right">Valor</th>
+                                    <th class="py-3 px-4 text-center">Ação / Baixa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaContasPagar" class="divide-y divide-slate-800/70 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- ABA LANÇAMENTOS -->
             <div id="view-transacoes" class="hidden space-y-4">
                 <div class="card p-5 rounded-2xl">
@@ -205,6 +280,7 @@
                             </select>
                         </div>
                         <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="window.abrirModalNovaContaPagar()" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold">📅 + Conta a Pagar</button>
                             <button type="button" onclick="window.abrirModalTransacao('receita')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold">+ Nova Receita</button>
                             <button type="button" onclick="window.abrirModalTransacao('despesa')" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold">+ Nova Despesa</button>
                         </div>
@@ -330,6 +406,98 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- MODAL NOVA CONTA A PAGAR (PROGRAMAÇÃO DE BOLETOS/CONTAS) -->
+    <div id="modalNovaContaPagar" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
+        <div class="card p-6 rounded-2xl w-full max-w-md space-y-4 shadow-2xl border-amber-500/40">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-lg font-bold text-white">📅 Agendar Conta a Pagar</h3>
+                    <p class="text-[11px] text-slate-400">Ficará "Em Aberto" sem descontar do saldo até você pagar.</p>
+                </div>
+                <button type="button" onclick="window.fecharModalNovaContaPagar()" class="text-slate-400 hover:text-white text-lg font-bold px-2">✕</button>
+            </div>
+            <form onsubmit="window.salvarNovaContaPagar(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-300 font-medium mb-1">Descrição da Conta</label>
+                    <input type="text" id="cpDescricao" required placeholder="Ex: Financiamento da Casa, Energia, Condomínio..." class="w-full px-3.5 py-2.5 rounded-xl text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-300 font-medium mb-1">Valor Previsto (R$)</label>
+                        <input type="number" id="cpValor" step="0.01" min="0.01" required placeholder="0,00" class="w-full px-3.5 py-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-amber-400 font-semibold mb-1">Data de Vencimento</label>
+                        <input type="date" id="cpVencimento" required class="w-full px-3.5 py-2.5 rounded-xl text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-300 font-medium mb-1">Categoria</label>
+                        <select id="cpCategoria" class="w-full px-3.5 py-2.5 rounded-xl text-sm"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-300 font-medium mb-1">Repetição</label>
+                        <select id="cpRepeticao" class="w-full px-3.5 py-2.5 rounded-xl text-sm">
+                            <option value="1">Apenas este mês (1x)</option>
+                            <option value="3">Repetir por 3 meses</option>
+                            <option value="6">Repetir por 6 meses</option>
+                            <option value="12">Fixo Mensal (12 meses)</option>
+                            <option value="24">Financiamento (24 meses)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="p-3 bg-amber-950/30 border border-amber-500/30 rounded-xl text-xs text-amber-200/90">
+                    💡 <strong>Como funciona:</strong> O banco e a data exata do pagamento serão escolhidos apenas no dia em que você clicar em <strong>"Pagar"</strong>.
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="window.fecharModalNovaContaPagar()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-sm">Salvar Conta em Aberto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DAR BAIXA / PAGAR CONTA (ESCOLHER BANCO E DATA DE PAGAMENTO) -->
+    <div id="modalBaixaConta" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
+        <div class="card p-6 rounded-2xl w-full max-w-md space-y-4 shadow-2xl border-emerald-500/40">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-lg font-bold text-emerald-400">✅ Confirmar Pagamento da Conta</h3>
+                    <p class="text-xs text-slate-400" id="subtituloBaixaConta">Escolha de qual banco saiu o dinheiro</p>
+                </div>
+                <button type="button" onclick="window.fecharModalBaixaConta()" class="text-slate-400 hover:text-white text-lg font-bold px-2">✕</button>
+            </div>
+            <form onsubmit="window.confirmarBaixaConta(event)" class="space-y-4">
+                <input type="hidden" id="baixaTransacaoId" value="">
+                <div class="p-3.5 bg-slate-900 rounded-xl border border-slate-800">
+                    <p class="text-xs text-slate-400">Conta selecionada:</p>
+                    <h4 id="baixaNomeConta" class="text-base font-bold text-white mt-0.5">-</h4>
+                    <p id="baixaVencimentoOriginal" class="text-[11px] text-amber-400 mt-1">Vencimento: -</p>
+                </div>
+                <div>
+                    <label class="block text-xs text-emerald-400 font-bold mb-1">🏦 Pagar com qual Banco / Conta Corrente?</label>
+                    <select id="baixaBancoSelect" required class="w-full px-3.5 py-2.5 rounded-xl text-sm"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-300 font-medium mb-1">📅 Data do Pagamento</label>
+                        <input type="date" id="baixaDataPagamento" required class="w-full px-3.5 py-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-300 font-medium mb-1">💰 Valor Pago (R$)</label>
+                        <input type="number" id="baixaValorPago" step="0.01" min="0.01" required class="w-full px-3.5 py-2.5 rounded-xl text-sm">
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400">Ao confirmar, o status mudará para <strong class="text-emerald-400">Pago</strong> e o valor será descontado imediatamente do saldo do banco escolhido.</p>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="window.fecharModalBaixaConta()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm">✓ Confirmar e Descontar do Saldo</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- MODAL CONFIGURAÇÃO NUVEM -->
@@ -591,7 +759,9 @@
                 descricao: String(t.descricao || 'Lançamento'),
                 valor: Number(t.valor) || 0,
                 data: (typeof t.data === 'string' && t.data.length >= 10) ? t.data.slice(0, 10) : hojeStr,
-                contaId: t.contaId || contas[0].id,
+                dataVencimento: t.dataVencimento || ((typeof t.data === 'string' && t.data.length >= 10) ? t.data.slice(0, 10) : hojeStr),
+                dataPagamento: t.dataPagamento || null,
+                contaId: t.contaId || 'a_definir',
                 tipo: t.tipo === 'receita' ? 'receita' : 'despesa',
                 categoria: t.categoria || 'Outros',
                 pago: typeof t.pago === 'boolean' ? t.pago : true
@@ -708,12 +878,14 @@
             const ativo = document.getElementById(`nav-${aba}`);
             if (ativo) ativo.classList.add('active');
 
-            ['dashboard', 'transacoes', 'cartoes', 'contas', 'metas', 'caixinhas', 'categorias'].forEach(v => {
-                document.getElementById(`view-${v}`).classList.add('hidden');
+            ['dashboard', 'contas_pagar', 'transacoes', 'cartoes', 'contas', 'metas', 'caixinhas', 'categorias'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
             });
 
             const info = {
                 dashboard: ['Visão Geral', 'Painel consolidado de controle financeiro e patrimônio'],
+                contas_pagar: ['Contas a Pagar', 'Gerencie boletos e financiamentos em aberto e escolha o banco ao pagar'],
                 lancamentos: ['Extrato de Lançamentos', 'Histórico de receitas, despesas e compras parceladas'],
                 receitas: ['Minhas Receitas', 'Todas as entradas financeiras do mês'],
                 despesas: ['Minhas Despesas', 'Gastos à vista, fixos e parcelas do mês'],
@@ -736,6 +908,7 @@
             window.atualizarTudo();
         };
 
+        // O saldo real da conta bancária só desconta quando t.pago === true
         function calcularSaldoConta(contaId, apenasPagos = true) {
             const c = contas.find(x => x.id === contaId);
             if (!c) return 0;
@@ -743,6 +916,13 @@
             const rec = l.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
             const desp = l.filter(t => t.tipo === 'despesa').reduce((a, b) => a + b.valor, 0);
             return (Number(c.saldoInicial) || 0) + rec - desp;
+        }
+
+        function ehContaPagarAvulsa(t) {
+            if (t.tipo !== 'despesa' || t.categoria === 'Transferência') return false;
+            if (t.contaId === 'a_definir') return true;
+            const c = contas.find(x => x.id === t.contaId);
+            return !c || c.tipo === 'corrente';
         }
 
         window.atualizarTudo = function() {
@@ -757,6 +937,7 @@
             atualizarKPIsEAlertas(mesFiltro);
 
             if (abaAtual === 'dashboard') renderizarDashboard(mesFiltro);
+            if (abaAtual === 'contas_pagar') window.renderizarContasPagar();
             if (['lancamentos', 'receitas', 'despesas'].includes(abaAtual)) window.renderizarVisaoTransacoes();
             if (abaAtual === 'cartoes') renderizarCartoes(mesFiltro);
             if (abaAtual === 'contas') renderizarContas();
@@ -768,12 +949,14 @@
         function atualizarKPIsEAlertas(mesFiltro) {
             const correntes = contas.filter(c => c.tipo === 'corrente');
             const saldoAtual = correntes.reduce((acc, c) => acc + calcularSaldoConta(c.id, true), 0);
-            const saldoPrevisto = correntes.reduce((acc, c) => acc + calcularSaldoConta(c.id, false), 0);
-
-            document.getElementById('kpiSaldoContas').textContent = formatarMoeda(saldoAtual);
-            document.getElementById('kpiPrevistoContas').textContent = `Previsto: ${formatarMoeda(saldoPrevisto)}`;
 
             const doMes = transacoes.filter(t => (!mesFiltro || t.data.startsWith(mesFiltro)) && t.categoria !== 'Transferência');
+            const contasPagarAbertasMes = doMes.filter(t => ehContaPagarAvulsa(t) && !t.pago).reduce((a, b) => a + b.valor, 0);
+            const saldoPrevisto = saldoAtual - contasPagarAbertasMes;
+
+            document.getElementById('kpiSaldoContas').textContent = formatarMoeda(saldoAtual);
+            document.getElementById('kpiPrevistoContas').textContent = `Após contas: ${formatarMoeda(saldoPrevisto)}`;
+
             const rec = doMes.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
             const recPend = doMes.filter(t => t.tipo === 'receita' && !t.pago).reduce((a, b) => a + b.valor, 0);
             const despConsumo = doMes.filter(t => t.tipo === 'despesa' && t.categoria !== 'Investimentos').reduce((a, b) => a + b.valor, 0);
@@ -796,10 +979,20 @@
             elBal.className = `valor-sensivel text-xl font-bold mt-1 ${saldoLivre >= 0 ? 'text-blue-400' : 'text-rose-400'}`;
             document.getElementById('kpiTaxaPoupanca').textContent = `Poupança + Aportes: ${taxaPoupanca}%`;
 
+            // Badge no menu lateral com quantidade de Contas a Pagar em aberto no mês selecionado
+            const qtdAbertasMes = doMes.filter(t => ehContaPagarAvulsa(t) && !t.pago).length;
+            const badgeMenu = document.getElementById('badgeMenuContasPagar');
+            if (qtdAbertasMes > 0) {
+                badgeMenu.textContent = qtdAbertasMes;
+                badgeMenu.classList.remove('hidden');
+            } else {
+                badgeMenu.classList.add('hidden');
+            }
+
             const hojeStr = new Date().toISOString().slice(0, 10);
             const atrasadas = transacoes.filter(t => {
-                const c = contas.find(x => x.id === t.contaId);
-                return !t.pago && t.tipo === 'despesa' && (!c || c.tipo === 'corrente') && t.data < hojeStr;
+                const venc = t.dataVencimento || t.data;
+                return !t.pago && ehContaPagarAvulsa(t) && venc < hojeStr;
             });
 
             const banner = document.getElementById('bannerAtrasados');
@@ -807,11 +1000,208 @@
                 const somaAtr = atrasadas.reduce((a, b) => a + b.valor, 0);
                 banner.classList.remove('hidden');
                 document.getElementById('tituloAtrasados').textContent = `Atenção: Existem ${atrasadas.length} conta(s) vencida(s) não paga(s)!`;
-                document.getElementById('descAtrasados').textContent = `Total em atraso: ${formatarMoeda(somaAtr)}.`;
+                document.getElementById('descAtrasados').textContent = `Total em atraso: ${formatarMoeda(somaAtr)}. Clique ao lado para dar baixa.`;
             } else {
                 banner.classList.add('hidden');
             }
         }
+
+        // RENDERIZAR NOVA ABA: CONTAS A PAGAR
+        window.renderizarContasPagar = function() {
+            const mesFiltro = document.getElementById('filtroMes').value;
+            const statusFiltro = document.getElementById('filtroStatusContasPagar').value;
+            const hojeStr = new Date().toISOString().slice(0, 10);
+
+            let listaMes = transacoes.filter(t => {
+                const refMes = (t.dataVencimento || t.data).slice(0, 7);
+                return (!mesFiltro || refMes === mesFiltro) && ehContaPagarAvulsa(t);
+            });
+
+            const abertas = listaMes.filter(t => !t.pago);
+            const vencidas = abertas.filter(t => (t.dataVencimento || t.data) < hojeStr);
+            const pagas = listaMes.filter(t => t.pago);
+
+            document.getElementById('resumoPagarAberto').textContent = formatarMoeda(abertas.reduce((a, b) => a + b.valor, 0));
+            document.getElementById('qtdPagarAberto').textContent = `${abertas.length} conta(s) em aberto neste mês`;
+
+            document.getElementById('resumoPagarVencido').textContent = formatarMoeda(vencidas.reduce((a, b) => a + b.valor, 0));
+            document.getElementById('qtdPagarVencido').textContent = `${vencidas.length} conta(s) atrasada(s)`;
+
+            document.getElementById('resumoPagarPago').textContent = formatarMoeda(pagas.reduce((a, b) => a + b.valor, 0));
+            document.getElementById('qtdPagarPago').textContent = `${pagas.length} conta(s) paga(s) no mês`;
+
+            if (statusFiltro === 'abertas') listaMes = abertas;
+            if (statusFiltro === 'pagas') listaMes = pagas;
+
+            // Ordena: primeiro em aberto por data de vencimento, depois pagas
+            listaMes.sort((a, b) => {
+                if (a.pago !== b.pago) return a.pago ? 1 : -1;
+                return new Date(a.dataVencimento || a.data) - new Date(b.dataVencimento || b.data);
+            });
+
+            const tbody = document.getElementById('tabelaContasPagar');
+            if (!listaMes.length) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-500">Nenhuma conta a pagar cadastrada para este filtro/mês. Clique em <strong>"+ Nova Conta a Pagar"</strong> para agendar!</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = listaMes.map(t => {
+                const venc = t.dataVencimento || t.data;
+                const contaObj = contas.find(x => x.id === t.contaId);
+                const nomeBanco = t.contaId === 'a_definir' || !contaObj
+                    ? '<span class="text-amber-400/90 italic">⏳ A escolher no pagamento</span>'
+                    : `🏦 ${contaObj.nome}`;
+
+                let badgeStatus = '';
+                if (t.pago) {
+                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400">✅ Pago</span>`;
+                } else if (venc < hojeStr) {
+                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-400">🔴 Vencida</span>`;
+                } else if (venc === hojeStr) {
+                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/30 text-amber-300">🟠 Vence Hoje!</span>`;
+                } else {
+                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400">⏳ Em Aberto</span>`;
+                }
+
+                const infoDatas = t.pago && t.dataPagamento
+                    ? `<div class="text-xs text-white font-semibold">Venc: ${formatarData(venc)}</div><div class="text-[11px] text-emerald-400">Pago em: ${formatarData(t.dataPagamento)}</div>`
+                    : `<div class="text-xs text-slate-200 font-semibold">Vence: ${formatarData(venc)}</div>`;
+
+                const btnAcao = !t.pago
+                    ? `<button type="button" onclick="window.abrirModalBaixaConta(${t.id})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow transition">✅ Pagar / Dar Baixa</button>`
+                    : `<button type="button" onclick="window.reabrirContaPagar(${t.id})" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px]">↩️ Reabrir</button>`;
+
+                return `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="py-3.5 px-4">${badgeStatus}</td>
+                        <td class="py-3.5 px-4">${infoDatas}</td>
+                        <td class="py-3.5 px-4 font-semibold text-white">${t.descricao}</td>
+                        <td class="py-3.5 px-4"><span class="px-2 py-1 bg-slate-800 rounded text-xs text-slate-300">${t.categoria}</span></td>
+                        <td class="py-3.5 px-4 text-xs text-slate-300">${nomeBanco}</td>
+                        <td class="valor-sensivel py-3.5 px-4 text-right font-bold ${t.pago ? 'text-emerald-400' : 'text-rose-400'}">${formatarMoeda(t.valor)}</td>
+                        <td class="py-3.5 px-4 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                ${btnAcao}
+                                <button type="button" onclick="window.editarTransacao(${t.id})" class="text-slate-400 hover:text-blue-400 p-1" title="Editar">✏️</button>
+                                <button type="button" onclick="window.excluirTransacao(${t.id}, '${t.grupoId || ''}')" class="text-slate-400 hover:text-rose-400 p-1" title="Excluir">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
+        };
+
+        // FUNÇÕES DO MODAL: AGENDAR NOVA CONTA A PAGAR
+        window.abrirModalNovaContaPagar = function() {
+            document.getElementById('cpDescricao').value = '';
+            document.getElementById('cpValor').value = '';
+            const mesSelecionado = document.getElementById('filtroMes').value || new Date().toISOString().slice(0, 7);
+            const hoje = new Date().toISOString().slice(0, 10);
+            document.getElementById('cpVencimento').value = hoje.startsWith(mesSelecionado) ? hoje : `${mesSelecionado}-10`;
+            document.getElementById('cpCategoria').innerHTML = categorias.despesa.filter(c => c !== 'Transferência').map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('cpRepeticao').value = '1';
+            document.getElementById('modalNovaContaPagar').classList.remove('hidden');
+            document.getElementById('modalNovaContaPagar').classList.add('flex');
+        };
+
+        window.fecharModalNovaContaPagar = function() {
+            document.getElementById('modalNovaContaPagar').classList.add('hidden');
+            document.getElementById('modalNovaContaPagar').classList.remove('flex');
+        };
+
+        window.salvarNovaContaPagar = function(e) {
+            e.preventDefault();
+            const desc = document.getElementById('cpDescricao').value.trim();
+            const valor = parseFloat(document.getElementById('cpValor').value);
+            const venc = document.getElementById('cpVencimento').value;
+            const cat = document.getElementById('cpCategoria').value;
+            const rep = parseInt(document.getElementById('cpRepeticao').value || '1');
+
+            const grp = rep > 1 ? ('cp_' + Date.now()) : null;
+            for (let i = 0; i < rep; i++) {
+                const dataVencMes = somarMesesData(venc, i);
+                const sufixo = rep > 1 ? ` (${i + 1}/${rep})` : '';
+                transacoes.push({
+                    id: Date.now() + i,
+                    grupoId: grp,
+                    descricao: `${desc}${sufixo}`,
+                    valor: valor,
+                    data: dataVencMes,
+                    dataVencimento: dataVencMes,
+                    dataPagamento: null,
+                    contaId: 'a_definir', // Só escolhe o banco na hora de pagar
+                    tipo: 'despesa',
+                    categoria: cat,
+                    pago: false
+                });
+            }
+
+            salvarDados();
+            window.fecharModalNovaContaPagar();
+            // Muda automaticamente para o mês do vencimento se o usuário cadastrou para o próximo mês
+            const mesVenc = venc.slice(0, 7);
+            if (document.getElementById('filtroMes').value !== mesVenc) {
+                document.getElementById('filtroMes').value = mesVenc;
+            }
+            window.navegar('contas_pagar');
+        };
+
+        // FUNÇÕES DO MODAL: DAR BAIXA / ESCOLHER BANCO E DATA DE PAGAMENTO
+        window.abrirModalBaixaConta = function(id) {
+            const t = transacoes.find(x => x.id === id);
+            if (!t) return;
+            const correntes = contas.filter(c => c.tipo === 'corrente');
+            if (!correntes.length) return alert('Cadastre pelo menos uma Conta Bancária primeiro.');
+
+            document.getElementById('baixaTransacaoId').value = t.id;
+            document.getElementById('baixaNomeConta').textContent = t.descricao;
+            document.getElementById('baixaVencimentoOriginal').textContent = `Data de Vencimento: ${formatarData(t.dataVencimento || t.data)}`;
+            document.getElementById('baixaBancoSelect').innerHTML = correntes.map(c => `<option value="${c.id}">🏦 ${c.nome} (Saldo: ${formatarMoeda(calcularSaldoConta(c.id, true))})</option>`).join('');
+            if (t.contaId && t.contaId !== 'a_definir' && correntes.some(c => c.id === t.contaId)) {
+                document.getElementById('baixaBancoSelect').value = t.contaId;
+            }
+            document.getElementById('baixaDataPagamento').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('baixaValorPago').value = t.valor;
+
+            document.getElementById('modalBaixaConta').classList.remove('hidden');
+            document.getElementById('modalBaixaConta').classList.add('flex');
+        };
+
+        window.fecharModalBaixaConta = function() {
+            document.getElementById('modalBaixaConta').classList.add('hidden');
+            document.getElementById('modalBaixaConta').classList.remove('flex');
+        };
+
+        window.confirmarBaixaConta = function(e) {
+            e.preventDefault();
+            const id = Number(document.getElementById('baixaTransacaoId').value);
+            const bancoId = document.getElementById('baixaBancoSelect').value;
+            const dataPag = document.getElementById('baixaDataPagamento').value;
+            const valorPago = parseFloat(document.getElementById('baixaValorPago').value);
+
+            const t = transacoes.find(x => x.id === id);
+            if (!t) return;
+
+            if (!t.dataVencimento) t.dataVencimento = t.data;
+            t.contaId = bancoId;
+            t.dataPagamento = dataPag;
+            t.valor = valorPago;
+            t.pago = true;
+
+            salvarDados();
+            window.fecharModalBaixaConta();
+            window.atualizarTudo();
+        };
+
+        window.reabrirContaPagar = function(id) {
+            const t = transacoes.find(x => x.id === id);
+            if (!t) return;
+            if (confirm(`Deseja reabrir a conta "${t.descricao}"?\nO valor voltará a ficar Em Aberto e será devolvido ao saldo da conta bancária.`)) {
+                t.pago = false;
+                t.dataPagamento = null;
+                salvarDados();
+                window.atualizarTudo();
+            }
+        };
 
         function renderizarDashboard(mesFiltro) {
             const grid = document.getElementById('gridDashboardContas');
@@ -942,16 +1332,17 @@
             tbody.innerHTML = l.map(t => {
                 const c = contas.find(x => x.id === t.contaId);
                 const isC = c && c.tipo === 'credito';
+                const nomeConta = t.contaId === 'a_definir' ? '⏳ A definir no pagamento' : (c ? `${isC ? '💳' : '🏦'} ${c.nome}` : 'Conta');
                 return `
                     <tr class="hover:bg-slate-800/40 transition">
                         <td class="py-3 px-4">
                             <button type="button" onclick="window.alternarStatusPago(${t.id})" class="px-2.5 py-1 rounded-full text-xs font-medium ${t.pago ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'}">
-                                ${t.pago ? '✓ Pago' : (isC ? '💳 Na Fatura' : '⏳ Pendente')}
+                                ${t.pago ? '✓ Pago' : (isC ? '💳 Na Fatura' : '⏳ Pagar / Baixar')}
                             </button>
                         </td>
                         <td class="py-3 px-4 text-slate-300 text-xs">${formatarData(t.data)}</td>
                         <td class="py-3 px-4 font-medium text-white">${t.descricao}</td>
-                        <td class="py-3 px-4 text-xs text-slate-300">${isC ? '💳' : '🏦'} ${c ? c.nome : 'Conta'}</td>
+                        <td class="py-3 px-4 text-xs text-slate-300">${nomeConta}</td>
                         <td class="py-3 px-4"><span class="px-2 py-1 bg-slate-800 rounded text-xs text-slate-300">${t.categoria}</span></td>
                         <td class="valor-sensivel py-3 px-4 text-right font-bold ${t.tipo === 'receita' ? 'text-emerald-400' : 'text-rose-400'}">${t.tipo === 'receita' ? '+' : '-'} ${formatarMoeda(t.valor)}</td>
                         <td class="py-3 px-4 text-center space-x-1">
@@ -1113,7 +1504,7 @@
         }
 
         function popularSelectsContas() {
-            document.getElementById('formConta').innerHTML = contas.map(c => `<option value="${c.id}">${c.tipo === 'credito' ? '💳' : '🏦'} ${c.nome}</option>`).join('');
+            document.getElementById('formConta').innerHTML = `<option value="a_definir">⏳ A definir no pagamento (Conta a Pagar)</option>` + contas.map(c => `<option value="${c.id}">${c.tipo === 'credito' ? '💳' : '🏦'} ${c.nome}</option>`).join('');
             const f = document.getElementById('filtroConta'), at = f.value || 'todas';
             f.innerHTML = `<option value="todas">Todas as Contas/Cartões</option>` + contas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
             f.value = contas.some(c => c.id === at) ? at : 'todas';
@@ -1128,6 +1519,7 @@
             document.getElementById('tituloModalTransacao').textContent = 'Novo Lançamento';
             document.getElementById('colCondicao').classList.remove('hidden');
             window.setTipoForm(tipo);
+            if (contas.length > 0) document.getElementById('formConta').value = contas[0].id;
             document.getElementById('formCondicao').value = 'unico';
             window.alternarCamposRepeticao();
             window.verificarContaSelecionada();
@@ -1144,7 +1536,7 @@
             document.getElementById('formDescricao').value = t.descricao;
             document.getElementById('formValor').value = t.valor;
             document.getElementById('formData').value = t.data;
-            document.getElementById('formConta').value = t.contaId;
+            document.getElementById('formConta').value = t.contaId || 'a_definir';
             document.getElementById('formCategoria').value = t.categoria;
             document.getElementById('formPago').value = t.pago ? 'true' : 'false';
             document.getElementById('colCondicao').classList.add('hidden');
@@ -1168,8 +1560,13 @@
         };
 
         window.verificarContaSelecionada = function() {
-            const c = contas.find(x => x.id === document.getElementById('formConta').value);
-            document.getElementById('formPago').value = (c && c.tipo === 'credito') ? 'false' : 'true';
+            const valConta = document.getElementById('formConta').value;
+            const c = contas.find(x => x.id === valConta);
+            if (valConta === 'a_definir' || (c && c.tipo === 'credito')) {
+                document.getElementById('formPago').value = 'false';
+            } else {
+                document.getElementById('formPago').value = 'true';
+            }
             window.verificarFechamentoCartao();
         };
 
@@ -1209,11 +1606,13 @@
             const tipo = document.getElementById('formTipo').value;
             const categoria = document.getElementById('formCategoria').value;
             const cond = document.getElementById('formCondicao').value;
-            const pago = document.getElementById('formPago').value === 'true';
+            const pago = contaId === 'a_definir' ? false : (document.getElementById('formPago').value === 'true');
 
             if (editId) {
                 const idx = transacoes.findIndex(x => String(x.id) === String(editId));
-                if (idx > -1) transacoes[idx] = { ...transacoes[idx], descricao: desc, valor, data, contaId, tipo, categoria, pago };
+                if (idx > -1) {
+                    transacoes[idx] = { ...transacoes[idx], descricao: desc, valor, data, dataVencimento: data, contaId, tipo, categoria, pago };
+                }
                 salvarDados(); window.fecharModalTransacao(); window.atualizarTudo(); return;
             }
 
@@ -1223,18 +1622,22 @@
             }
 
             if (cond === 'unico') {
-                transacoes.push({ id: Date.now(), descricao: desc, valor, data, contaId, tipo, categoria, pago: isC ? false : pago });
+                transacoes.push({ id: Date.now(), descricao: desc, valor, data, dataVencimento: data, dataPagamento: pago ? data : null, contaId, tipo, categoria, pago: isC ? false : pago });
             } else if (cond === 'parcelado') {
                 const n = parseInt(document.getElementById('formNumParcelas').value);
                 const valP = document.getElementById('formModoParcela').value === 'dividir' ? Number((valor / n).toFixed(2)) : valor;
                 const grp = 'grp_' + Date.now();
                 for (let i = 0; i < n; i++) {
-                    transacoes.push({ id: Date.now() + i, grupoId: grp, descricao: `${desc} (${i + 1}/${n})`, valor: valP, data: somarMesesData(data, i), contaId, tipo, categoria, pago: isC ? false : (i === 0 ? pago : false) });
+                    const dtM = somarMesesData(data, i);
+                    const pgM = isC || contaId === 'a_definir' ? false : (i === 0 ? pago : false);
+                    transacoes.push({ id: Date.now() + i, grupoId: grp, descricao: `${desc} (${i + 1}/${n})`, valor: valP, data: dtM, dataVencimento: dtM, dataPagamento: pgM ? dtM : null, contaId, tipo, categoria, pago: pgM });
                 }
             } else if (cond === 'fixo') {
                 const grp = 'fix_' + Date.now();
                 for (let i = 0; i < 12; i++) {
-                    transacoes.push({ id: Date.now() + i, grupoId: grp, descricao: `${desc} (Fixo)`, valor, data: somarMesesData(data, i), contaId, tipo, categoria, pago: isC ? false : (i === 0 ? pago : false) });
+                    const dtM = somarMesesData(data, i);
+                    const pgM = isC || contaId === 'a_definir' ? false : (i === 0 ? pago : false);
+                    transacoes.push({ id: Date.now() + i, grupoId: grp, descricao: `${desc} (Fixo)`, valor, data: dtM, dataVencimento: dtM, dataPagamento: pgM ? dtM : null, contaId, tipo, categoria, pago: pgM });
                 }
             }
             salvarDados(); window.fecharModalTransacao(); window.atualizarTudo();
@@ -1242,12 +1645,21 @@
 
         window.alternarStatusPago = function(id) {
             const t = transacoes.find(x => x.id === id);
-            if (t) { t.pago = !t.pago; salvarDados(); window.atualizarTudo(); }
+            if (!t) return;
+            const c = contas.find(x => x.id === t.contaId);
+            // Se for uma despesa em aberto (que não seja de cartão de crédito), abre o modal para escolher o banco e a data do pagamento!
+            if (!t.pago && t.tipo === 'despesa' && (!c || c.tipo === 'corrente')) {
+                window.abrirModalBaixaConta(id);
+                return;
+            }
+            t.pago = !t.pago;
+            salvarDados();
+            window.atualizarTudo();
         };
 
         window.excluirTransacao = function(id, grp) {
             if (grp) {
-                if (confirm('Excluir TODAS as parcelas vinculadas?\n(OK = Todas | Cancelar = Apenas esta)')) transacoes = transacoes.filter(t => t.grupoId !== grp);
+                if (confirm('Excluir TODAS as parcelas/repetições vinculadas?\n(OK = Todas | Cancelar = Apenas esta)')) transacoes = transacoes.filter(t => t.grupoId !== grp);
                 else transacoes = transacoes.filter(t => t.id !== id);
             } else {
                 if (!confirm('Excluir este lançamento?')) return;
@@ -1358,7 +1770,7 @@
             let csv = '\uFEFFData;Descricao;Conta;Categoria;Tipo;Status;Valor\n';
             l.forEach(t => {
                 const c = contas.find(x => x.id === t.contaId);
-                csv += `${formatarData(t.data)};"${t.descricao}";"${c ? c.nome : 'Conta'}";"${t.categoria}";${t.tipo};${t.pago ? 'Pago' : 'Pendente'};${String(t.valor.toFixed(2)).replace('.', ',')}\n`;
+                csv += `${formatarData(t.data)};"${t.descricao}";"${c ? c.nome : 'A definir'}";"${t.categoria}";${t.tipo};${t.pago ? 'Pago' : 'Pendente'};${String(t.valor.toFixed(2)).replace('.', ',')}\n`;
             });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
