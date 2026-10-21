@@ -95,6 +95,9 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2.5">
+                <button type="button" onclick="window.ativarNotificacoesNavegador()" id="btnNotificacao" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs flex items-center gap-1.5 text-amber-300 transition" title="Receber alerta no navegador quando contas estiverem vencendo">
+                    <span>🔔</span> <span id="textoBtnNotificacao">Ativar Alertas</span>
+                </button>
                 <button type="button" onclick="window.abrirModalNuvem()" id="badgeStatusNuvem" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs flex items-center gap-1.5 text-slate-300 transition">
                     <span>☁️</span> <span id="textoStatusNuvem">Configurar Nuvem</span>
                 </button>
@@ -109,16 +112,28 @@
         </header>
 
         <main class="p-6 space-y-6 max-w-7xl w-full mx-auto">
-            <!-- Alerta de Contas Vencidas -->
+            <!-- Alerta Vermelho: Contas Vencidas -->
             <div id="bannerAtrasados" class="hidden bg-rose-950/80 border border-rose-500/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl">⚠️</span>
+                    <span class="text-2xl">🚨</span>
                     <div>
                         <h4 class="text-sm font-bold text-rose-200" id="tituloAtrasados">Atenção: Existem lançamentos vencidos!</h4>
-                        <p class="text-xs text-rose-300/80" id="descAtrasados">Verifique suas contas a pagar.</p>
+                        <p class="text-xs text-rose-300/90" id="descAtrasados">Verifique suas contas a pagar.</p>
                     </div>
                 </div>
-                <button type="button" onclick="window.navegar('contas_pagar')" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shrink-0">Ver Contas a Pagar</button>
+                <button type="button" onclick="window.navegar('contas_pagar')" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shrink-0">Pagar Agora</button>
+            </div>
+
+            <!-- Alerta Amarelo: Contas Próximas de Vencer (Hoje ou nos próximos 3 dias) -->
+            <div id="bannerProximos" class="hidden bg-amber-950/80 border border-amber-500/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🔔</span>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-200" id="tituloProximos">Aviso: Contas próximas do vencimento!</h4>
+                        <p class="text-xs text-amber-300/90" id="descProximos">Você tem contas vencendo nos próximos dias.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.navegar('contas_pagar')" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold shrink-0">Ver Contas a Pagar</button>
             </div>
 
             <!-- 5 KPIs -->
@@ -199,9 +214,8 @@
                 </div>
             </div>
 
-            <!-- NOVA ABA: CONTAS A PAGAR -->
+            <!-- ABA: CONTAS A PAGAR -->
             <div id="view-contas_pagar" class="hidden space-y-6">
-                <!-- Resumo de Contas a Pagar do Mês -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="card p-4 rounded-2xl border-l-4 border-l-amber-500 flex items-center justify-between">
                         <div>
@@ -251,7 +265,7 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-slate-800 text-slate-400 text-xs uppercase">
-                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Status / Alerta</th>
                                     <th class="py-3 px-4">Vencimento / Pagamento</th>
                                     <th class="py-3 px-4">Descrição da Conta</th>
                                     <th class="py-3 px-4">Categoria</th>
@@ -408,7 +422,7 @@
         </main>
     </div>
 
-    <!-- MODAL NOVA CONTA A PAGAR (PROGRAMAÇÃO DE BOLETOS/CONTAS) -->
+    <!-- MODAL NOVA CONTA A PAGAR -->
     <div id="modalNovaContaPagar" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
         <div class="card p-6 rounded-2xl w-full max-w-md space-y-4 shadow-2xl border-amber-500/40">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -450,7 +464,7 @@
                     </div>
                 </div>
                 <div class="p-3 bg-amber-950/30 border border-amber-500/30 rounded-xl text-xs text-amber-200/90">
-                    💡 <strong>Como funciona:</strong> O banco e a data exata do pagamento serão escolhidos apenas no dia em que você clicar em <strong>"Pagar"</strong>.
+                    💡 <strong>Aviso Automático:</strong> O sistema alertará você <strong>3 dias antes do vencimento</strong> no painel e por e-mail (se configurado no Drive).
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="window.fecharModalNovaContaPagar()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm">Cancelar</button>
@@ -460,7 +474,7 @@
         </div>
     </div>
 
-    <!-- MODAL DAR BAIXA / PAGAR CONTA (ESCOLHER BANCO E DATA DE PAGAMENTO) -->
+    <!-- MODAL DAR BAIXA / PAGAR CONTA -->
     <div id="modalBaixaConta" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50">
         <div class="card p-6 rounded-2xl w-full max-w-md space-y-4 shadow-2xl border-emerald-500/40">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -729,6 +743,43 @@
         let chartFluxoInstance = null;
         let chartCatInstance = null;
         let timerSync = null;
+        let notificacaoDisparadaSessao = false;
+
+        // Calcula quantos dias faltam entre hoje e a data de vencimento (ex: 0 = hoje, 1 = amanhã, -1 = ontem)
+        function calcularDiasParaVencimento(dataVencStr) {
+            if (!dataVencStr) return 999;
+            const hojeStr = new Date().toISOString().slice(0, 10);
+            const [a1, m1, d1] = hojeStr.split('-').map(Number);
+            const [a2, m2, d2] = dataVencStr.slice(0, 10).split('-').map(Number);
+            const dtHoje = new Date(a1, m1 - 1, d1);
+            const dtVenc = new Date(a2, m2 - 1, d2);
+            return Math.round((dtVenc - dtHoje) / (1000 * 60 * 60 * 24));
+        }
+
+        window.ativarNotificacoesNavegador = async function() {
+            if (!('Notification' in window)) {
+                return alert('O seu navegador não suporta notificações nativas.');
+            }
+            const perm = await Notification.requestPermission();
+            atualizarBotaoNotificacao();
+            if (perm === 'granted') {
+                new Notification('💎 FinançasPro — Alertas Ativados!', {
+                    body: 'Você será avisado sempre que houver contas vencendo nos próximos 3 dias.'
+                });
+            } else {
+                alert('Permissão de notificação negada no navegador.');
+            }
+        };
+
+        function atualizarBotaoNotificacao() {
+            const btn = document.getElementById('btnNotificacao');
+            const txt = document.getElementById('textoBtnNotificacao');
+            if (!btn || !txt || !('Notification' in window)) return;
+            if (Notification.permission === 'granted') {
+                btn.className = "px-3 py-1.5 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs flex items-center gap-1.5 text-emerald-300 transition";
+                txt.textContent = "Alertas Ativos";
+            }
+        }
 
         function carregarDadosSeguros() {
             try {
@@ -908,7 +959,6 @@
             window.atualizarTudo();
         };
 
-        // O saldo real da conta bancária só desconta quando t.pago === true
         function calcularSaldoConta(contaId, apenasPagos = true) {
             const c = contas.find(x => x.id === contaId);
             if (!c) return 0;
@@ -979,7 +1029,7 @@
             elBal.className = `valor-sensivel text-xl font-bold mt-1 ${saldoLivre >= 0 ? 'text-blue-400' : 'text-rose-400'}`;
             document.getElementById('kpiTaxaPoupanca').textContent = `Poupança + Aportes: ${taxaPoupanca}%`;
 
-            // Badge no menu lateral com quantidade de Contas a Pagar em aberto no mês selecionado
+            // Contador no menu lateral
             const qtdAbertasMes = doMes.filter(t => ehContaPagarAvulsa(t) && !t.pago).length;
             const badgeMenu = document.getElementById('badgeMenuContasPagar');
             if (qtdAbertasMes > 0) {
@@ -989,24 +1039,57 @@
                 badgeMenu.classList.add('hidden');
             }
 
-            const hojeStr = new Date().toISOString().slice(0, 10);
+            // 1. Contas Vencidas (dias < 0)
             const atrasadas = transacoes.filter(t => {
-                const venc = t.dataVencimento || t.data;
-                return !t.pago && ehContaPagarAvulsa(t) && venc < hojeStr;
+                if (t.pago || !ehContaPagarAvulsa(t)) return false;
+                return calcularDiasParaVencimento(t.dataVencimento || t.data) < 0;
             });
 
-            const banner = document.getElementById('bannerAtrasados');
+            const bannerAtr = document.getElementById('bannerAtrasados');
             if (atrasadas.length > 0) {
                 const somaAtr = atrasadas.reduce((a, b) => a + b.valor, 0);
-                banner.classList.remove('hidden');
-                document.getElementById('tituloAtrasados').textContent = `Atenção: Existem ${atrasadas.length} conta(s) vencida(s) não paga(s)!`;
-                document.getElementById('descAtrasados').textContent = `Total em atraso: ${formatarMoeda(somaAtr)}. Clique ao lado para dar baixa.`;
+                bannerAtr.classList.remove('hidden');
+                document.getElementById('tituloAtrasados').textContent = `Atenção: Você tem ${atrasadas.length} conta(s) vencida(s) em atraso!`;
+                document.getElementById('descAtrasados').textContent = `Total vencido: ${formatarMoeda(somaAtr)} (${atrasadas.map(x => x.descricao).slice(0, 3).join(', ')}).`;
             } else {
-                banner.classList.add('hidden');
+                bannerAtr.classList.add('hidden');
+            }
+
+            // 2. Contas Próximas do Vencimento (vencem Hoje ou em até 3 dias: 0 <= dias <= 3)
+            const proximas = transacoes.filter(t => {
+                if (t.pago || !ehContaPagarAvulsa(t)) return false;
+                const dias = calcularDiasParaVencimento(t.dataVencimento || t.data);
+                return dias >= 0 && dias <= 3;
+            });
+
+            const bannerProx = document.getElementById('bannerProximos');
+            if (proximas.length > 0) {
+                const somaProx = proximas.reduce((a, b) => a + b.valor, 0);
+                const nomesProx = proximas.map(x => {
+                    const d = calcularDiasParaVencimento(x.dataVencimento || x.data);
+                    return `${x.descricao} (${d === 0 ? 'Vence HOJE' : `em ${d} dia(s)`})`;
+                }).join(' • ');
+                bannerProx.classList.remove('hidden');
+                document.getElementById('tituloProximos').textContent = `🔔 Lembrete: ${proximas.length} conta(s) vencendo nos próximos dias (${formatarMoeda(somaProx)})`;
+                document.getElementById('descProximos').textContent = nomesProx;
+            } else {
+                bannerProx.classList.add('hidden');
+            }
+
+            // Dispara Notificação no Navegador/Celular 1 vez ao abrir a sessão
+            if (!notificacaoDisparadaSessao && ('Notification' in window) && Notification.permission === 'granted') {
+                if (atrasadas.length > 0 || proximas.length > 0) {
+                    notificacaoDisparadaSessao = true;
+                    const msg = [];
+                    if (atrasadas.length > 0) msg.push(`${atrasadas.length} vencida(s)`);
+                    if (proximas.length > 0) msg.push(`${proximas.length} vencendo em até 3 dias`);
+                    new Notification('📅 Alerta de Contas a Pagar — FinançasPro', {
+                        body: `Atenção: Você possui ${msg.join(' e ')}. Confira na aba Contas a Pagar!`
+                    });
+                }
             }
         }
 
-        // RENDERIZAR NOVA ABA: CONTAS A PAGAR
         window.renderizarContasPagar = function() {
             const mesFiltro = document.getElementById('filtroMes').value;
             const statusFiltro = document.getElementById('filtroStatusContasPagar').value;
@@ -1033,7 +1116,6 @@
             if (statusFiltro === 'abertas') listaMes = abertas;
             if (statusFiltro === 'pagas') listaMes = pagas;
 
-            // Ordena: primeiro em aberto por data de vencimento, depois pagas
             listaMes.sort((a, b) => {
                 if (a.pago !== b.pago) return a.pago ? 1 : -1;
                 return new Date(a.dataVencimento || a.data) - new Date(b.dataVencimento || b.data);
@@ -1047,6 +1129,7 @@
 
             tbody.innerHTML = listaMes.map(t => {
                 const venc = t.dataVencimento || t.data;
+                const dias = calcularDiasParaVencimento(venc);
                 const contaObj = contas.find(x => x.id === t.contaId);
                 const nomeBanco = t.contaId === 'a_definir' || !contaObj
                     ? '<span class="text-amber-400/90 italic">⏳ A escolher no pagamento</span>'
@@ -1055,12 +1138,14 @@
                 let badgeStatus = '';
                 if (t.pago) {
                     badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400">✅ Pago</span>`;
-                } else if (venc < hojeStr) {
-                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-400">🔴 Vencida</span>`;
-                } else if (venc === hojeStr) {
-                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/30 text-amber-300">🟠 Vence Hoje!</span>`;
+                } else if (dias < 0) {
+                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-400">🔴 Vencida (${Math.abs(dias)}d)</span>`;
+                } else if (dias === 0) {
+                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/30 text-amber-200 animate-pulse">🟠 Vence Hoje!</span>`;
+                } else if (dias <= 3) {
+                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/25 text-amber-300">🔔 Vence em ${dias} dia(s)</span>`;
                 } else {
-                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400">⏳ Em Aberto</span>`;
+                    badgeStatus = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-amber-400">⏳ Em Aberto</span>`;
                 }
 
                 const infoDatas = t.pago && t.dataPagamento
@@ -1090,7 +1175,6 @@
             }).join('');
         };
 
-        // FUNÇÕES DO MODAL: AGENDAR NOVA CONTA A PAGAR
         window.abrirModalNovaContaPagar = function() {
             document.getElementById('cpDescricao').value = '';
             document.getElementById('cpValor').value = '';
@@ -1128,7 +1212,7 @@
                     data: dataVencMes,
                     dataVencimento: dataVencMes,
                     dataPagamento: null,
-                    contaId: 'a_definir', // Só escolhe o banco na hora de pagar
+                    contaId: 'a_definir',
                     tipo: 'despesa',
                     categoria: cat,
                     pago: false
@@ -1137,7 +1221,6 @@
 
             salvarDados();
             window.fecharModalNovaContaPagar();
-            // Muda automaticamente para o mês do vencimento se o usuário cadastrou para o próximo mês
             const mesVenc = venc.slice(0, 7);
             if (document.getElementById('filtroMes').value !== mesVenc) {
                 document.getElementById('filtroMes').value = mesVenc;
@@ -1145,7 +1228,6 @@
             window.navegar('contas_pagar');
         };
 
-        // FUNÇÕES DO MODAL: DAR BAIXA / ESCOLHER BANCO E DATA DE PAGAMENTO
         window.abrirModalBaixaConta = function(id) {
             const t = transacoes.find(x => x.id === id);
             if (!t) return;
@@ -1647,7 +1729,6 @@
             const t = transacoes.find(x => x.id === id);
             if (!t) return;
             const c = contas.find(x => x.id === t.contaId);
-            // Se for uma despesa em aberto (que não seja de cartão de crédito), abre o modal para escolher o banco e a data do pagamento!
             if (!t.pago && t.tipo === 'despesa' && (!c || c.tipo === 'corrente')) {
                 window.abrirModalBaixaConta(id);
                 return;
@@ -1798,6 +1879,7 @@
             document.getElementById('formData').value = h;
             document.getElementById('transfData').value = h;
             atualizarBadgeNuvem();
+            atualizarBotaoNotificacao();
             window.atualizarTudo();
         });
     </script>
