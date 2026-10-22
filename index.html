@@ -124,7 +124,7 @@
                 <button type="button" onclick="window.navegar('contas_pagar')" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold shrink-0">Pagar Agora</button>
             </div>
 
-            <!-- Alerta Amarelo: Contas Próximas de Vencer (Hoje ou nos próximos 3 dias) -->
+            <!-- Alerta Amarelo: Contas Próximas de Vencer -->
             <div id="bannerProximos" class="hidden bg-amber-950/80 border border-amber-500/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <span class="text-2xl">🔔</span>
@@ -195,9 +195,12 @@
                 </div>
 
                 <div class="card p-5 rounded-2xl space-y-4">
-                    <div>
-                        <h3 class="text-sm font-bold text-white">💡 Termômetro 50 - 30 - 20 (Saúde Financeira do Mês)</h3>
-                        <p class="text-xs text-slate-400">Distribuição ideal sobre sua Receita Mensal: 50% Essenciais, 30% Estilo de Vida e 20% Investimentos/Futuro.</p>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-white">💡 Termômetro 50 - 30 - 20 (Saúde Financeira do Mês)</h3>
+                            <p class="text-xs text-slate-400">Distribuição ideal sobre sua Receita Mensal: 50% Essenciais, 30% Estilo de Vida e 20% Investimentos/Futuro.</p>
+                        </div>
+                        <span id="badgeGastosNeutros" class="hidden px-2.5 py-1 bg-slate-800 border border-slate-700 rounded-lg text-[11px] text-slate-300"></span>
                     </div>
                     <div id="painel503020" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
                 </div>
@@ -391,15 +394,16 @@
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-800 pb-4">
                         <div>
                             <h3 class="text-lg font-semibold text-white">🏷️ Personalizar Categorias</h3>
-                            <p class="text-xs text-slate-400">Adicione categorias e classifique para a Regra 50-30-20.</p>
+                            <p class="text-xs text-slate-400">Adicione categorias e classifique para a Regra 50-30-20 (ou deixe sem classificação).</p>
                         </div>
                         <form onsubmit="window.adicionarCategoriaPersonalizada(event)" class="flex flex-wrap items-center gap-2">
                             <input type="text" id="novaCatNome" required placeholder="Nome da Categoria..." class="px-3 py-2 rounded-xl text-xs">
-                            <select id="novaCatTipo" class="px-3 py-2 rounded-xl text-xs">
+                            <select id="novaCatTipo" onchange="window.alternarSelectGrupoCat()" class="px-3 py-2 rounded-xl text-xs">
                                 <option value="despesa">Despesa</option>
                                 <option value="receita">Receita</option>
                             </select>
                             <select id="novaCatGrupo" class="px-3 py-2 rounded-xl text-xs">
+                                <option value="nenhum">— Em Branco / Sem classificação (Fora do 50-30-20)</option>
                                 <option value="essencial">Essencial (50%)</option>
                                 <option value="estilo">Estilo de Vida (30%)</option>
                                 <option value="investimento">Investimento/Futuro (20%)</option>
@@ -409,7 +413,10 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <h4 class="text-sm font-bold text-rose-400 mb-3">📉 Categorias de Despesa</h4>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-sm font-bold text-rose-400">📉 Categorias de Despesa</h4>
+                                <span class="text-[11px] text-slate-400">Você pode alterar o grupo ao lado de cada item</span>
+                            </div>
                             <div id="listaCategoriasDespesa" class="space-y-2"></div>
                         </div>
                         <div>
@@ -464,7 +471,7 @@
                     </div>
                 </div>
                 <div class="p-3 bg-amber-950/30 border border-amber-500/30 rounded-xl text-xs text-amber-200/90">
-                    💡 <strong>Aviso Automático:</strong> O sistema alertará você <strong>3 dias antes do vencimento</strong> no painel e por e-mail (se configurado no Drive).
+                    💡 <strong>Aviso Automático:</strong> O sistema alertará você <strong>3 dias antes do vencimento</strong> no painel.
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="window.fecharModalNovaContaPagar()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm">Cancelar</button>
@@ -716,7 +723,7 @@
             receita: ['Salário', 'Freelance', 'Dividendos', 'Rendimentos', 'Vendas', 'Reembolso', 'Transferência', 'Outros'],
             grupos: {
                 'Moradia': 'essencial', 'Alimentação': 'essencial', 'Supermercado': 'essencial', 'Transporte': 'essencial', 'Saúde': 'essencial', 'Educação': 'essencial',
-                'Lazer': 'estilo', 'Assinaturas': 'estilo', 'Compras': 'estilo', 'Outros': 'estilo', 'Investimentos': 'investimento'
+                'Lazer': 'estilo', 'Assinaturas': 'estilo', 'Compras': 'estilo', 'Outros': 'nenhum', 'Investimentos': 'investimento'
             }
         };
 
@@ -745,7 +752,6 @@
         let timerSync = null;
         let notificacaoDisparadaSessao = false;
 
-        // Calcula quantos dias faltam entre hoje e a data de vencimento (ex: 0 = hoje, 1 = amanhã, -1 = ontem)
         function calcularDiasParaVencimento(dataVencStr) {
             if (!dataVencStr) return 999;
             const hojeStr = new Date().toISOString().slice(0, 10);
@@ -1009,9 +1015,9 @@
 
             const rec = doMes.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
             const recPend = doMes.filter(t => t.tipo === 'receita' && !t.pago).reduce((a, b) => a + b.valor, 0);
-            const despConsumo = doMes.filter(t => t.tipo === 'despesa' && t.categoria !== 'Investimentos').reduce((a, b) => a + b.valor, 0);
+            const despConsumo = doMes.filter(t => t.tipo === 'despesa' && (categorias.grupos[t.categoria] !== 'investimento' && t.categoria !== 'Investimentos')).reduce((a, b) => a + b.valor, 0);
             const despPend = doMes.filter(t => t.tipo === 'despesa' && !t.pago).reduce((a, b) => a + b.valor, 0);
-            const aportesMes = doMes.filter(t => t.tipo === 'despesa' && t.categoria === 'Investimentos').reduce((a, b) => a + b.valor, 0);
+            const aportesMes = doMes.filter(t => t.tipo === 'despesa' && (categorias.grupos[t.categoria] === 'investimento' || t.categoria === 'Investimentos')).reduce((a, b) => a + b.valor, 0);
 
             const totalCaixinhas = caixinhas.reduce((a, b) => a + (Number(b.atual) || 0), 0);
             const saldoLivre = rec - despConsumo - aportesMes;
@@ -1029,7 +1035,6 @@
             elBal.className = `valor-sensivel text-xl font-bold mt-1 ${saldoLivre >= 0 ? 'text-blue-400' : 'text-rose-400'}`;
             document.getElementById('kpiTaxaPoupanca').textContent = `Poupança + Aportes: ${taxaPoupanca}%`;
 
-            // Contador no menu lateral
             const qtdAbertasMes = doMes.filter(t => ehContaPagarAvulsa(t) && !t.pago).length;
             const badgeMenu = document.getElementById('badgeMenuContasPagar');
             if (qtdAbertasMes > 0) {
@@ -1039,7 +1044,6 @@
                 badgeMenu.classList.add('hidden');
             }
 
-            // 1. Contas Vencidas (dias < 0)
             const atrasadas = transacoes.filter(t => {
                 if (t.pago || !ehContaPagarAvulsa(t)) return false;
                 return calcularDiasParaVencimento(t.dataVencimento || t.data) < 0;
@@ -1055,7 +1059,6 @@
                 bannerAtr.classList.add('hidden');
             }
 
-            // 2. Contas Próximas do Vencimento (vencem Hoje ou em até 3 dias: 0 <= dias <= 3)
             const proximas = transacoes.filter(t => {
                 if (t.pago || !ehContaPagarAvulsa(t)) return false;
                 const dias = calcularDiasParaVencimento(t.dataVencimento || t.data);
@@ -1076,7 +1079,6 @@
                 bannerProx.classList.add('hidden');
             }
 
-            // Dispara Notificação no Navegador/Celular 1 vez ao abrir a sessão
             if (!notificacaoDisparadaSessao && ('Notification' in window) && Notification.permission === 'granted') {
                 if (atrasadas.length > 0 || proximas.length > 0) {
                     notificacaoDisparadaSessao = true;
@@ -1325,13 +1327,23 @@
 
             const doMes = transacoes.filter(t => (!mesFiltro || t.data.startsWith(mesFiltro)) && t.categoria !== 'Transferência');
             const rendaMes = doMes.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
-            let sEss = 0, sEst = 0, sInv = 0;
+            let sEss = 0, sEst = 0, sInv = 0, sNeutro = 0;
+
             doMes.filter(t => t.tipo === 'despesa').forEach(d => {
-                const g = categorias.grupos[d.categoria] || 'estilo';
+                const g = categorias.grupos[d.categoria];
                 if (g === 'essencial') sEss += d.valor;
                 else if (g === 'investimento' || d.categoria === 'Investimentos') sInv += d.valor;
-                else sEst += d.valor;
+                else if (g === 'estilo') sEst += d.valor;
+                else sNeutro += d.valor; // Quando for 'nenhum' (Em branco / Sem classificação), não entra no 50-30-20!
             });
+
+            const badgeNeutros = document.getElementById('badgeGastosNeutros');
+            if (sNeutro > 0) {
+                badgeNeutros.textContent = `Fora da regra (Sem classificação): ${formatarMoeda(sNeutro)}`;
+                badgeNeutros.classList.remove('hidden');
+            } else {
+                badgeNeutros.classList.add('hidden');
+            }
 
             const pEss = rendaMes > 0 ? Math.round((sEss / rendaMes) * 100) : 0;
             const pEst = rendaMes > 0 ? Math.round((sEst / rendaMes) * 100) : 0;
@@ -1556,13 +1568,39 @@
             if (confirm('Excluir esta caixinha?')) { caixinhas = caixinhas.filter(x => x.id !== id); salvarDados(); window.atualizarTudo(); }
         };
 
+        window.alternarSelectGrupoCat = function() {
+            const tipo = document.getElementById('novaCatTipo').value;
+            document.getElementById('novaCatGrupo').classList.toggle('hidden', tipo === 'receita');
+        };
+
+        window.mudarGrupoCategoriaExistente = function(nomeCat, novoGrupo) {
+            categorias.grupos[nomeCat] = novoGrupo;
+            salvarDados();
+            window.atualizarTudo();
+        };
+
         function renderizarCategorias() {
             document.getElementById('listaCategoriasDespesa').innerHTML = categorias.despesa.filter(c => c !== 'Transferência').map(c => {
-                const g = categorias.grupos[c] || 'estilo';
-                const lbl = g === 'essencial' ? 'Essencial (50%)' : g === 'investimento' ? 'Investimento (20%)' : 'Estilo de Vida (30%)';
-                return `<div class="flex justify-between items-center p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-xs"><div><span class="font-semibold text-white">${c}</span><span class="ml-2 px-2 py-0.5 bg-slate-800 text-slate-400 rounded">${lbl}</span></div><button type="button" onclick="window.removerCategoria('despesa', '${c}')" class="text-slate-500 hover:text-rose-400">🗑️</button></div>`;
+                const g = categorias.grupos[c] || 'nenhum';
+                const catEscapada = c.replace(/'/g, "\\'");
+                return `
+                    <div class="flex justify-between items-center p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-xs gap-2">
+                        <span class="font-semibold text-white truncate">${c}</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <select onchange="window.mudarGrupoCategoriaExistente('${catEscapada}', this.value)" class="px-2 py-1 rounded-lg text-[11px] bg-slate-800 text-slate-300 border border-slate-700">
+                                <option value="nenhum" ${g === 'nenhum' ? 'selected' : ''}>— Sem classificação</option>
+                                <option value="essencial" ${g === 'essencial' ? 'selected' : ''}>Essencial (50%)</option>
+                                <option value="estilo" ${g === 'estilo' ? 'selected' : ''}>Estilo de Vida (30%)</option>
+                                <option value="investimento" ${g === 'investimento' ? 'selected' : ''}>Investimento (20%)</option>
+                            </select>
+                            <button type="button" onclick="window.removerCategoria('despesa', '${catEscapada}')" class="text-slate-500 hover:text-rose-400 p-1">🗑️</button>
+                        </div>
+                    </div>`;
             }).join('');
-            document.getElementById('listaCategoriasReceita').innerHTML = categorias.receita.filter(c => c !== 'Transferência').map(c => `<div class="flex justify-between items-center p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-xs"><span class="font-semibold text-white">${c}</span><button type="button" onclick="window.removerCategoria('receita', '${c}')" class="text-slate-500 hover:text-rose-400">🗑️</button></div>`).join('');
+            document.getElementById('listaCategoriasReceita').innerHTML = categorias.receita.filter(c => c !== 'Transferência').map(c => {
+                const catEscapada = c.replace(/'/g, "\\'");
+                return `<div class="flex justify-between items-center p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-xs"><span class="font-semibold text-white">${c}</span><button type="button" onclick="window.removerCategoria('receita', '${catEscapada}')" class="text-slate-500 hover:text-rose-400 p-1">🗑️</button></div>`;
+            }).join('');
         }
 
         window.adicionarCategoriaPersonalizada = function(e) {
