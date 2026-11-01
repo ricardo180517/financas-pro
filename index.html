@@ -24,7 +24,6 @@
             overflow-x: hidden;
         }
 
-        /* Scrollbar elegante */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0b1120; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
@@ -42,6 +41,12 @@
             transform: translateY(-2px);
             border-color: rgba(59, 130, 246, 0.45);
             box-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-cartao-interativo:hover {
+            transform: translateY(-2px);
+            border-color: rgba(168, 85, 247, 0.6);
+            box-shadow: 0 14px 30px -5px rgba(88, 28, 135, 0.35);
         }
 
         .sidebar {
@@ -84,7 +89,6 @@
         body.privacy-mode .valor-sensivel { filter: blur(8px); transition: filter 0.25s ease; }
         .valor-sensivel { transition: filter 0.25s ease; }
 
-        /* Estilo de Impressão / Relatório PDF */
         @media print {
             #sidebar, header, #bannerAtrasados, #bannerProximos, .no-print { display: none !important; }
             body { background: #ffffff !important; color: #000000 !important; }
@@ -95,7 +99,7 @@
 </head>
 <body class="flex min-h-screen">
 
-    <!-- CONTAINER DE TOAST (NOTIFICAÇÕES ELEGANTES) -->
+    <!-- CONTAINER DE TOAST -->
     <div id="toastContainer" class="fixed top-5 right-5 z-50 space-y-2.5 pointer-events-none"></div>
 
     <!-- SIDEBAR -->
@@ -279,6 +283,7 @@
                     <div class="flex flex-wrap justify-between items-center gap-2">
                         <div class="flex items-center gap-2">
                             <h3 class="text-sm font-bold text-white uppercase tracking-wider">🏦 Minhas Contas e Cartões</h3>
+                            <span class="text-[11px] text-slate-400 hidden sm:inline">(Dê duplo clique em um cartão para ver as compras)</span>
                         </div>
                         <div class="flex flex-wrap gap-2 no-print">
                             <button type="button" onclick="window.abrirModalNovaContaPagar()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">📅 + Conta a Pagar</button>
@@ -319,7 +324,7 @@
                     </div>
                 </div>
 
-                <!-- NOVO PAINEL EXECUTIVO: PRÓXIMOS VENCIMENTOS & ÚLTIMAS MOVIMENTAÇÕES -->
+                <!-- PAINEL EXECUTIVO: PRÓXIMOS VENCIMENTOS & ÚLTIMAS MOVIMENTAÇÕES -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="card p-5 rounded-2xl space-y-3">
                         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -431,7 +436,6 @@
                         </div>
                     </div>
 
-                    <!-- Resumo Rápido do Filtro Atual -->
                     <div id="resumoFiltroExtrato" class="grid grid-cols-3 gap-3 p-3 bg-slate-900/90 rounded-xl border border-slate-800 text-xs"></div>
 
                     <div class="overflow-x-auto">
@@ -453,12 +457,12 @@
                 </div>
             </div>
 
-            <!-- ABA CARTÕES -->
+            <!-- ABA CARTÕES (LISTA DE CARTÕES) -->
             <div id="view-cartoes" class="hidden space-y-6">
                 <div class="flex flex-wrap justify-between items-center gap-4">
                     <div>
                         <h3 class="text-lg font-semibold text-white">💳 Gestão de Cartões de Crédito</h3>
-                        <p class="text-xs text-slate-400">Compras após o fechamento vão automaticamente para a fatura seguinte.</p>
+                        <p class="text-xs text-slate-400">💡 <strong class="text-purple-300">Dica:</strong> Dê um <strong>duplo clique</strong> sobre qualquer cartão abaixo (ou clique em "Ver Fatura") para abrir todos os lançamentos dele!</p>
                     </div>
                     <div class="flex gap-2">
                         <button type="button" onclick="window.abrirModalTransacao('despesa')" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold">+ Lançar Compra no Cartão</button>
@@ -466,6 +470,90 @@
                     </div>
                 </div>
                 <div id="gridCartoesCredito" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
+
+            <!-- NOVA ABA INTERNA: DETALHES E EXTRATO COMPLETO DO CARTÃO SELECIONADO -->
+            <div id="view-detalhe_cartao" class="hidden space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="window.navegar('cartoes')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition">
+                            <span>⬅</span> Voltar aos Cartões
+                        </button>
+                        <div>
+                            <h3 id="detCartaoTitulo" class="text-lg font-extrabold text-white">💳 Cartão</h3>
+                            <p id="detCartaoSubtitulo" class="text-xs text-slate-400">Fecha dia - • Vence dia -</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" id="btnLancamentoDiretoCartao" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold shadow">
+                            + Nova Compra neste Cartão
+                        </button>
+                        <button type="button" id="btnPagarFaturaDetalhe" class="hidden px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow">
+                            ✓ Pagar Fatura do Mês
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resumo do Cartão Selecionado -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="card p-4 rounded-2xl border-l-4 border-l-rose-500">
+                        <span id="lblDetFaturaMes" class="text-[11px] text-slate-400 uppercase font-semibold">Fatura do Mês</span>
+                        <h4 id="valDetFaturaMes" class="valor-sensivel text-xl font-extrabold text-rose-400 mt-1">R$ 0,00</h4>
+                        <span id="statusDetFaturaMes" class="text-[11px] text-slate-400 mt-0.5 block">-</span>
+                    </div>
+                    <div class="card p-4 rounded-2xl border-l-4 border-l-purple-500">
+                        <span class="text-[11px] text-slate-400 uppercase font-semibold">Comprometido Total (Todas Faturas)</span>
+                        <h4 id="valDetComprometido" class="valor-sensivel text-xl font-extrabold text-purple-400 mt-1">R$ 0,00</h4>
+                        <span id="qtdDetParcelasAbertas" class="text-[11px] text-slate-400 mt-0.5 block">0 lançamento(s) em aberto</span>
+                    </div>
+                    <div class="card p-4 rounded-2xl border-l-4 border-l-emerald-500">
+                        <span class="text-[11px] text-slate-400 uppercase font-semibold">Limite Disponível</span>
+                        <h4 id="valDetDisponivel" class="valor-sensivel text-xl font-extrabold text-emerald-400 mt-1">R$ 0,00</h4>
+                        <span id="valDetLimiteTotal" class="valor-sensivel text-[11px] text-slate-400 mt-0.5 block">Limite Total: R$ 0,00</span>
+                    </div>
+                    <div class="card p-4 rounded-2xl border-l-4 border-l-blue-500 flex flex-col justify-center space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400 font-semibold">Uso do Limite</span>
+                            <span id="percDetUso" class="font-bold text-purple-300">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                            <div id="barDetUso" class="bg-purple-500 h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Lançamentos do Cartão -->
+                <div class="card p-5 rounded-2xl space-y-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button type="button" id="tabCartaoMes" onclick="window.setModoFiltroDetalheCartao('mes')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white transition">
+                                📅 Fatura do Mês Selecionado
+                            </button>
+                            <button type="button" id="tabCartaoTodos" onclick="window.setModoFiltroDetalheCartao('todos')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+                                🌐 Todas as Compras e Parcelas (Histórico/Futuro)
+                            </button>
+                        </div>
+                        <div class="w-full md:w-64">
+                            <input type="text" id="buscaDetalheCartao" oninput="window.renderizarDetalheCartao()" placeholder="🔍 Buscar compra neste cartão..." class="w-full px-3 py-2 rounded-xl text-xs">
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 text-xs uppercase">
+                                    <th class="py-3 px-4">Situação</th>
+                                    <th class="py-3 px-4">Data / Fatura</th>
+                                    <th class="py-3 px-4">Descrição da Compra</th>
+                                    <th class="py-3 px-4">Categoria</th>
+                                    <th class="py-3 px-4 text-right">Valor</th>
+                                    <th class="py-3 px-4 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaDetalheCartao" class="divide-y divide-slate-800/70 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <!-- ABA CONTAS -->
@@ -559,6 +647,51 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- MODAL PAGAR FATURA DO CARTÃO -->
+    <div id="modalPagarFatura" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="card p-6 rounded-2xl w-full max-w-md space-y-4 shadow-2xl border-purple-500/40">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-lg font-bold text-purple-300">💳 Pagar Fatura do Cartão</h3>
+                    <p class="text-xs text-slate-400">Escolha a conta bancária para quitar a fatura</p>
+                </div>
+                <button type="button" onclick="window.fecharModalPagarFatura()" class="text-slate-400 hover:text-white text-lg font-bold px-2">✕</button>
+            </div>
+            <form onsubmit="window.confirmarPagamentoFatura(event)" class="space-y-4">
+                <input type="hidden" id="faturaCartaoId" value="">
+                <input type="hidden" id="faturaMesRef" value="">
+                <div class="p-3.5 bg-slate-900 rounded-xl border border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-slate-400">Cartão:</p>
+                        <h4 id="faturaNomeCartao" class="text-base font-bold text-white">-</h4>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-400">Total em aberto no mês:</p>
+                        <h4 id="faturaValorExibicao" class="text-base font-extrabold text-rose-400">R$ 0,00</h4>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-purple-300 font-bold mb-1">🏦 Debitar de qual Conta Bancária?</label>
+                    <select id="faturaBancoSelect" required class="w-full px-3.5 py-2.5 rounded-xl text-sm"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-300 font-medium mb-1">📅 Data do Pagamento</label>
+                        <input type="date" id="faturaDataPagamento" required class="w-full px-3.5 py-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-300 font-medium mb-1">💰 Valor Pago (R$)</label>
+                        <input type="number" id="faturaValorInput" step="0.01" min="0.01" required class="w-full px-3.5 py-2.5 rounded-xl text-sm">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="window.fecharModalPagarFatura()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-sm">✓ Confirmar Pagamento</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- MODAL NOVA CONTA A PAGAR -->
@@ -880,12 +1013,13 @@
         let ultimoSync = localStorage.getItem('financas_ultimo_sync') || 'Nunca';
         let modoPrivacidade = false;
         let abaAtual = 'dashboard';
+        let cartaoDetalheId = null;
+        let modoFiltroDetalheCartao = 'mes'; // 'mes' ou 'todos'
         let chartFluxoInstance = null;
         let chartCatInstance = null;
         let timerSync = null;
         let notificacaoDisparadaSessao = false;
 
-        // Sistema de Notificação Toast Elegante
         window.mostrarToast = function(mensagem, tipo = 'sucesso') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -1116,10 +1250,11 @@
         window.navegar = function(aba) {
             abaAtual = aba;
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            const ativo = document.getElementById(`nav-${aba}`);
+            const navId = aba === 'detalhe_cartao' ? 'nav-cartoes' : `nav-${aba}`;
+            const ativo = document.getElementById(navId);
             if (ativo) ativo.classList.add('active');
 
-            ['dashboard', 'contas_pagar', 'transacoes', 'cartoes', 'contas', 'metas', 'caixinhas', 'categorias'].forEach(v => {
+            ['dashboard', 'contas_pagar', 'transacoes', 'cartoes', 'detalhe_cartao', 'contas', 'metas', 'caixinhas', 'categorias'].forEach(v => {
                 const el = document.getElementById(`view-${v}`);
                 if (el) el.classList.add('hidden');
             });
@@ -1130,23 +1265,135 @@
                 lancamentos: ['Extrato de Lançamentos', 'Histórico de receitas, despesas e compras parceladas'],
                 receitas: ['Minhas Receitas', 'Todas as entradas financeiras do mês'],
                 despesas: ['Minhas Despesas', 'Gastos à vista, fixos e parcelas do mês'],
-                cartoes: ['Cartões de Crédito', 'Gerencie limites, fechamento inteligente e faturas'],
+                cartoes: ['Cartões de Crédito', 'Dê duplo clique sobre qualquer cartão para abrir todas as compras dele'],
+                detalhe_cartao: ['Fatura e Lançamentos do Cartão', 'Visualização detalhada de todas as compras e parcelas do cartão'],
                 contas: ['Contas Bancárias', 'Saldo individual e edição de contas'],
                 metas: ['Orçamento Mensal', 'Teto de gastos planejado por categoria'],
                 caixinhas: ['Caixinhas e Objetivos', 'Metas financeiras e reserva de emergência'],
                 categorias: ['Categorias Personalizadas', 'Crie categorias e organize a Regra 50-30-20']
             };
 
-            document.getElementById('tituloPagina').textContent = info[aba][0];
-            document.getElementById('subtituloPagina').textContent = info[aba][1];
+            if (info[aba]) {
+                document.getElementById('tituloPagina').textContent = info[aba][0];
+                document.getElementById('subtituloPagina').textContent = info[aba][1];
+            }
 
             if (['lancamentos', 'receitas', 'despesas'].includes(aba)) {
                 document.getElementById('view-transacoes').classList.remove('hidden');
             } else {
-                document.getElementById(`view-${aba}`).classList.remove('hidden');
+                const target = document.getElementById(`view-${aba}`);
+                if (target) target.classList.remove('hidden');
             }
             if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('-translate-x-full');
             window.atualizarTudo();
+        };
+
+        // ABRE A ABA EXCLUSIVA DE LANÇAMENTOS DO CARTÃO AO DAR DUPLO CLIQUE
+        window.abrirDetalhesCartao = function(cartaoId) {
+            cartaoDetalheId = cartaoId;
+            modoFiltroDetalheCartao = 'mes';
+            const inputBusca = document.getElementById('buscaDetalheCartao');
+            if (inputBusca) inputBusca.value = '';
+            window.navegar('detalhe_cartao');
+        };
+
+        window.setModoFiltroDetalheCartao = function(modo) {
+            modoFiltroDetalheCartao = modo;
+            window.renderizarDetalheCartao();
+        };
+
+        window.renderizarDetalheCartao = function() {
+            const c = contas.find(x => x.id === cartaoDetalheId && x.tipo === 'credito');
+            if (!c) return window.navegar('cartoes');
+
+            const mesFiltro = document.getElementById('filtroMes').value || new Date().toISOString().slice(0, 7);
+            const busca = (document.getElementById('buscaDetalheCartao').value || '').toLowerCase();
+
+            document.getElementById('detCartaoTitulo').textContent = `💳 ${c.nome}`;
+            document.getElementById('detCartaoSubtitulo').textContent = `Fecha dia ${c.fechamento || 5} • Vence dia ${c.vencimento || 12}`;
+
+            const btnNovo = document.getElementById('btnLancamentoDiretoCartao');
+            btnNovo.onclick = () => window.abrirModalTransacaoCartaoEspecifico(c.id);
+
+            const todasDoCartao = transacoes.filter(t => t.contaId === c.id && t.tipo === 'despesa');
+            const doMes = todasDoCartao.filter(t => t.data.startsWith(mesFiltro));
+            const fatMes = doMes.reduce((a, b) => a + b.valor, 0);
+            const abMes = doMes.filter(t => !t.pago).reduce((a, b) => a + b.valor, 0);
+
+            const abertasTotal = todasDoCartao.filter(t => !t.pago);
+            const compTotal = abertasTotal.reduce((a, b) => a + b.valor, 0);
+            const lim = Number(c.limite) || 1;
+            const disp = Math.max(0, lim - compTotal);
+            const perc = Math.min(100, Math.round((compTotal / lim) * 100));
+
+            document.getElementById('lblDetFaturaMes').textContent = `Fatura (${mesFiltro})`;
+            document.getElementById('valDetFaturaMes').textContent = formatarMoeda(fatMes);
+            document.getElementById('statusDetFaturaMes').innerHTML = abMes > 0
+                ? `<span class="text-amber-400 font-semibold">Em aberto no mês: ${formatarMoeda(abMes)}</span>`
+                : `<span class="text-emerald-400 font-semibold">✓ Fatura Quitada</span>`;
+
+            document.getElementById('valDetComprometido').textContent = formatarMoeda(compTotal);
+            document.getElementById('qtdDetParcelasAbertas').textContent = `${abertasTotal.length} lançamento(s) em aberto no cartão`;
+            document.getElementById('valDetDisponivel').textContent = formatarMoeda(disp);
+            document.getElementById('valDetLimiteTotal').textContent = `Limite Total: ${formatarMoeda(c.limite)}`;
+            document.getElementById('percDetUso').textContent = `${perc}%`;
+            document.getElementById('barDetUso').style.width = `${perc}%`;
+
+            const btnPagar = document.getElementById('btnPagarFaturaDetalhe');
+            if (abMes > 0) {
+                btnPagar.classList.remove('hidden');
+                btnPagar.onclick = () => window.pagarFatura(c.id, mesFiltro, abMes);
+            } else {
+                btnPagar.classList.add('hidden');
+            }
+
+            // Estilo das abas de filtro (Fatura do Mês vs Todos os Lançamentos do Cartão)
+            const tabMes = document.getElementById('tabCartaoMes');
+            const tabTodos = document.getElementById('tabCartaoTodos');
+            if (modoFiltroDetalheCartao === 'mes') {
+                tabMes.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white shadow transition";
+                tabTodos.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+            } else {
+                tabTodos.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white shadow transition";
+                tabMes.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+            }
+
+            let listaExibir = modoFiltroDetalheCartao === 'mes' ? [...doMes] : [...todasDoCartao];
+            if (busca) {
+                listaExibir = listaExibir.filter(t => t.descricao.toLowerCase().includes(busca) || t.categoria.toLowerCase().includes(busca));
+            }
+
+            listaExibir.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+            const tbody = document.getElementById('tabelaDetalheCartao');
+            if (!listaExibir.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-500">Nenhum lançamento encontrado para este filtro no cartão <strong>${c.nome}</strong>.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = listaExibir.map(t => `
+                <tr class="hover:bg-slate-800/40 transition">
+                    <td class="py-3 px-4">
+                        <button type="button" onclick="window.alternarStatusPago(${t.id})" class="px-2.5 py-1 rounded-full text-xs font-semibold ${t.pago ? 'bg-emerald-500/15 text-emerald-400' : 'bg-purple-500/20 text-purple-300'}">
+                            ${t.pago ? '✓ Quitada' : '💳 Na Fatura'}
+                        </button>
+                    </td>
+                    <td class="py-3 px-4 text-slate-300 text-xs font-medium">${formatarData(t.data)}</td>
+                    <td class="py-3 px-4 font-semibold text-white">${t.descricao}</td>
+                    <td class="py-3 px-4"><span class="px-2 py-1 bg-slate-800 rounded text-xs text-slate-300">${t.categoria}</span></td>
+                    <td class="valor-sensivel py-3 px-4 text-right font-bold text-rose-400">${formatarMoeda(t.valor)}</td>
+                    <td class="py-3 px-4 text-center space-x-1">
+                        <button type="button" onclick="window.editarTransacao(${t.id})" class="text-slate-400 hover:text-blue-400 px-1.5 py-1" title="Editar">✏️</button>
+                        <button type="button" onclick="window.excluirTransacao(${t.id}, '${t.grupoId || ''}')" class="text-slate-400 hover:text-rose-400 px-1.5 py-1" title="Excluir">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        };
+
+        window.abrirModalTransacaoCartaoEspecifico = function(cartaoId) {
+            window.abrirModalTransacao('despesa');
+            document.getElementById('formConta').value = cartaoId;
+            window.verificarContaSelecionada();
         };
 
         function calcularSaldoConta(contaId, apenasPagos = true) {
@@ -1180,6 +1427,7 @@
             if (abaAtual === 'contas_pagar') window.renderizarContasPagar();
             if (['lancamentos', 'receitas', 'despesas'].includes(abaAtual)) window.renderizarVisaoTransacoes();
             if (abaAtual === 'cartoes') renderizarCartoes(mesFiltro);
+            if (abaAtual === 'detalhe_cartao') window.renderizarDetalheCartao();
             if (abaAtual === 'contas') renderizarContas();
             if (abaAtual === 'metas') renderizarMetas(mesFiltro);
             if (abaAtual === 'caixinhas') renderizarCaixinhas();
@@ -1219,7 +1467,6 @@
             elBal.className = `valor-sensivel text-xl font-extrabold mt-1 ${saldoLivre >= 0 ? 'text-blue-400' : 'text-rose-400'}`;
             document.getElementById('kpiTaxaPoupanca').textContent = `Poupança + Aportes: ${taxaPoupanca}%`;
 
-            // Atualiza Badge de Saúde Financeira no Header
             const badgeSaude = document.getElementById('badgeSaudeHeader');
             if (saldoLivre < 0) {
                 badgeSaude.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30";
@@ -1512,7 +1759,7 @@
                     const disp = Math.max(0, lim - comp);
                     const percUso = Math.min(100, Math.round((comp / lim) * 100));
                     return `
-                        <div class="card card-hover p-4 rounded-2xl border-l-4 border-l-purple-500 space-y-2.5">
+                        <div ondblclick="window.abrirDetalhesCartao('${c.id}')" title="Dê duplo clique para ver todos os lançamentos deste cartão" class="card card-cartao-interativo cursor-pointer p-4 rounded-2xl border-l-4 border-l-purple-500 space-y-2.5">
                             <div class="flex justify-between items-start">
                                 <div>
                                     <span class="text-[11px] text-slate-400 font-medium">💳 Cartão (Fecha dia ${c.fechamento || 5})</span>
@@ -1520,8 +1767,8 @@
                                     <p class="valor-sensivel text-sm font-extrabold text-rose-400 mt-1">Fatura Mês: ${formatarMoeda(faturaMes)}</p>
                                 </div>
                                 <div class="flex items-center gap-1 no-print">
-                                    <button type="button" onclick="window.editarConta('${c.id}')" class="text-slate-400 hover:text-blue-400 p-1.5 rounded-lg hover:bg-slate-800/60">✏️</button>
-                                    <button type="button" onclick="window.navegar('cartoes')" class="px-2.5 py-1 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 rounded-lg text-xs font-semibold">Fatura</button>
+                                    <button type="button" onclick="event.stopPropagation(); window.editarConta('${c.id}')" class="text-slate-400 hover:text-blue-400 p-1.5 rounded-lg hover:bg-slate-800/60">✏️</button>
+                                    <button type="button" onclick="event.stopPropagation(); window.abrirDetalhesCartao('${c.id}')" class="px-2.5 py-1 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 rounded-lg text-xs font-semibold">Fatura</button>
                                 </div>
                             </div>
                             <div class="space-y-1">
@@ -1578,7 +1825,6 @@
                     <p class="valor-sensivel text-[11px] text-slate-400">Aportado: ${formatarMoeda(sInv)} (Meta: ${formatarMoeda(rendaMes * 0.2)})</p>
                 </div>`;
 
-            // Renderizar Próximas Contas a Pagar no Dashboard
             const abertasDash = transacoes
                 .filter(t => !t.pago && ehContaPagarAvulsa(t) && (!mesFiltro || (t.dataVencimento || t.data).startsWith(mesFiltro)))
                 .sort((a, b) => new Date(a.dataVencimento || a.data) - new Date(b.dataVencimento || b.data))
@@ -1606,7 +1852,6 @@
                 }).join('');
             }
 
-            // Renderizar Últimas 5 Movimentações no Dashboard
             const recentesDash = [...doMes].sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, 5);
             const boxRec = document.getElementById('listaDashUltimasTransacoes');
             if (!recentesDash.length) {
@@ -1703,7 +1948,6 @@
             if (statusFiltro === 'pendente') l = l.filter(t => !t.pago);
             if (busca) l = l.filter(t => t.descricao.toLowerCase().includes(busca) || t.categoria.toLowerCase().includes(busca));
 
-            // Atualiza resumo rápido do filtro
             const totRec = l.filter(t => t.tipo === 'receita' && t.categoria !== 'Transferência').reduce((a, b) => a + b.valor, 0);
             const totDesp = l.filter(t => t.tipo === 'despesa' && t.categoria !== 'Transferência').reduce((a, b) => a + b.valor, 0);
             document.getElementById('resumoFiltroExtrato').innerHTML = `
@@ -1740,6 +1984,7 @@
             }).join('');
         };
 
+        // RENDERIZAR CARTÕES COM SUPORTE A DUPLO CLIQUE E BOTÃO "VER FATURA / COMPRAS"
         function renderizarCartoes(mesFiltro) {
             const grid = document.getElementById('gridCartoesCredito');
             const cartoes = contas.filter(c => c.tipo === 'credito');
@@ -1755,16 +2000,20 @@
                 const perc = Math.min(100, Math.round((todasAb / lim) * 100));
 
                 return `
-                    <div class="card p-6 rounded-2xl border-l-4 border-l-purple-500 space-y-4">
-                        <div class="flex justify-between items-start">
+                    <div ondblclick="window.abrirDetalhesCartao('${c.id}')" title="Dê duplo clique para abrir todos os lançamentos deste cartão" class="card card-cartao-interativo cursor-pointer p-6 rounded-2xl border-l-4 border-l-purple-500 space-y-4">
+                        <div class="flex justify-between items-start gap-2">
                             <div>
-                                <h4 class="font-bold text-white text-lg">💳 ${c.nome}</h4>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-white text-lg">💳 ${c.nome}</h4>
+                                    <span class="px-2 py-0.5 bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded text-[10px] font-semibold">2x cliques p/ abrir</span>
+                                </div>
                                 <span class="text-xs text-slate-400">Fecha dia ${c.fechamento || 5} • Vence dia ${c.vencimento || 12}</span>
                             </div>
-                            <div class="flex items-center gap-1.5">
-                                ${abMes > 0 ? `<button type="button" onclick="window.pagarFatura('${c.id}', '${mesFiltro}',${abMes})" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold">✓ Pagar Fatura</button>` : `<span class="px-2.5 py-1 bg-emerald-500/15 text-emerald-400 rounded-lg text-xs">Quitada</span>`}
-                                <button type="button" onclick="window.editarConta('${c.id}')" class="text-slate-400 hover:text-blue-400 p-1">✏️</button>
-                                <button type="button" onclick="window.excluirConta('${c.id}')" class="text-slate-400 hover:text-rose-400 p-1">🗑️</button>
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <button type="button" onclick="event.stopPropagation(); window.abrirDetalhesCartao('${c.id}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-semibold">🔎 Ver Compras</button>
+                                ${abMes > 0 ? `<button type="button" onclick="event.stopPropagation(); window.pagarFatura('${c.id}', '${mesFiltro}', ${abMes})" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold">✓ Pagar Fatura</button>` : `<span class="px-2.5 py-1 bg-emerald-500/15 text-emerald-400 rounded-lg text-xs">Quitada</span>`}
+                                <button type="button" onclick="event.stopPropagation(); window.editarConta('${c.id}')" class="text-slate-400 hover:text-blue-400 p-1">✏️</button>
+                                <button type="button" onclick="event.stopPropagation(); window.excluirConta('${c.id}')" class="text-slate-400 hover:text-rose-400 p-1">🗑️</button>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 p-4 bg-slate-900 rounded-xl border border-slate-800">
@@ -2150,18 +2399,60 @@
             }
         };
 
+        // MODAL ELEGANTE PARA PAGAR FATURA DO CARTÃO
         window.pagarFatura = function(cartaoId, mesFiltro, valor) {
-            const corr = contas.filter(c => c.tipo === 'corrente'), cart = contas.find(c => c.id === cartaoId);
+            const corr = contas.filter(c => c.tipo === 'corrente');
+            const cart = contas.find(c => c.id === cartaoId);
             if (!corr.length) return window.mostrarToast('Cadastre uma Conta Bancária primeiro.', 'aviso');
-            const esc = prompt(`Pagar fatura ${cart.nome} (${formatarMoeda(valor)}).\nDigite o número da conta:\n\n` + corr.map((c, i) => `${i + 1} - ${c.nome}`).join('\n'), '1');
-            if (!esc) return;
-            const deb = corr[parseInt(esc) - 1];
-            if (!deb) return window.mostrarToast('Conta selecionada inválida.', 'erro');
 
-            transacoes.forEach(t => { if (t.contaId === cartaoId && (!mesFiltro || t.data.startsWith(mesFiltro))) t.pago = true; });
-            transacoes.push({ id: Date.now(), descricao: `Pagamento Fatura ${cart.nome}`, valor, data: new Date().toISOString().slice(0, 10), contaId: deb.id, tipo: 'despesa', categoria: 'Transferência', pago: true });
-            salvarDados(); window.atualizarTudo();
-            window.mostrarToast(`Fatura do cartão ${cart.nome} paga!`, 'sucesso');
+            document.getElementById('faturaCartaoId').value = cartaoId;
+            document.getElementById('faturaMesRef').value = mesFiltro || '';
+            document.getElementById('faturaNomeCartao').textContent = `💳 ${cart.nome} (${mesFiltro})`;
+            document.getElementById('faturaValorExibicao').textContent = formatarMoeda(valor);
+            document.getElementById('faturaBancoSelect').innerHTML = corr.map(c => `<option value="${c.id}">🏦 ${c.nome} (Saldo: ${formatarMoeda(calcularSaldoConta(c.id, true))})</option>`).join('');
+            document.getElementById('faturaDataPagamento').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('faturaValorInput').value = Number(valor).toFixed(2);
+
+            document.getElementById('modalPagarFatura').classList.remove('hidden');
+            document.getElementById('modalPagarFatura').classList.add('flex');
+        };
+
+        window.fecharModalPagarFatura = function() {
+            document.getElementById('modalPagarFatura').classList.add('hidden');
+            document.getElementById('modalPagarFatura').classList.remove('flex');
+        };
+
+        window.confirmarPagamentoFatura = function(e) {
+            e.preventDefault();
+            const cartaoId = document.getElementById('faturaCartaoId').value;
+            const mesFiltro = document.getElementById('faturaMesRef').value;
+            const bancoId = document.getElementById('faturaBancoSelect').value;
+            const dataPag = document.getElementById('faturaDataPagamento').value;
+            const valorPago = parseFloat(document.getElementById('faturaValorInput').value);
+            const cart = contas.find(c => c.id === cartaoId);
+
+            transacoes.forEach(t => {
+                if (t.contaId === cartaoId && (!mesFiltro || t.data.startsWith(mesFiltro))) {
+                    t.pago = true;
+                }
+            });
+            transacoes.push({
+                id: Date.now(),
+                descricao: `Pagamento Fatura ${cart ? cart.nome : 'Cartão'} (${mesFiltro})`,
+                valor: valorPago,
+                data: dataPag,
+                dataVencimento: dataPag,
+                dataPagamento: dataPag,
+                contaId: bancoId,
+                tipo: 'despesa',
+                categoria: 'Transferência',
+                pago: true
+            });
+
+            salvarDados();
+            window.fecharModalPagarFatura();
+            window.atualizarTudo();
+            window.mostrarToast(`Fatura do cartão ${cart ? cart.nome : ''} quitada com sucesso!`, 'sucesso');
         };
 
         window.abrirModalTransferencia = function() { popularSelectsContas(); document.getElementById('modalTransferencia').classList.remove('hidden'); document.getElementById('modalTransferencia').classList.add('flex'); };
