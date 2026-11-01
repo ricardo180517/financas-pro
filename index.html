@@ -416,27 +416,39 @@
                 </div>
             </div>
 
-            <!-- ABA LANÇAMENTOS -->
+            <!-- ABA LANÇAMENTOS / RECEITAS / DESPESAS (COM FILTRO DE CATEGORIA E SOMA FINAL) -->
             <div id="view-transacoes" class="hidden space-y-4">
                 <div class="card p-5 rounded-2xl space-y-4">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                            <input type="text" id="buscaTexto" oninput="window.renderizarVisaoTransacoes()" placeholder="🔍 Buscar descrição ou categoria..." class="w-full md:w-60 px-3 py-2 rounded-xl text-sm">
-                            <select id="filtroConta" onchange="window.renderizarVisaoTransacoes()" class="px-3 py-2 rounded-xl text-sm"><option value="todas">Todas as Contas/Cartões</option></select>
-                            <select id="filtroStatus" onchange="window.renderizarVisaoTransacoes()" class="px-3 py-2 rounded-xl text-sm">
-                                <option value="todos">Todos os Status</option>
-                                <option value="pago">Pagos / Recebidos</option>
-                                <option value="pendente">Pendentes / Na Fatura</option>
+                    <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+                        <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
+                            <input type="text" id="buscaTexto" oninput="window.renderizarVisaoTransacoes()" placeholder="🔍 Buscar descrição..." class="w-full sm:w-52 px-3 py-2 rounded-xl text-xs">
+                            
+                            <!-- NOVO SELETOR DE CATEGORIA DEDICADO -->
+                            <select id="filtroCategoriaExtrato" onchange="window.renderizarVisaoTransacoes()" class="px-3 py-2 rounded-xl text-xs font-semibold border-blue-500/40">
+                                <option value="todas">🏷️ Todas as Categorias</option>
                             </select>
+
+                            <select id="filtroConta" onchange="window.renderizarVisaoTransacoes()" class="px-3 py-2 rounded-xl text-xs">
+                                <option value="todas">🏦 Todas as Contas/Cartões</option>
+                            </select>
+                            <select id="filtroStatus" onchange="window.renderizarVisaoTransacoes()" class="px-3 py-2 rounded-xl text-xs">
+                                <option value="todos">⚡ Todos os Status</option>
+                                <option value="pago">✓ Pagos / Recebidos</option>
+                                <option value="pendente">⏳ Pendentes / Na Fatura</option>
+                            </select>
+                            <button type="button" id="btnLimparFiltrosExtrato" onclick="window.limparFiltrosExtrato()" class="hidden px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 rounded-xl text-xs font-semibold transition">
+                                ✕ Limpar Filtros
+                            </button>
                         </div>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-wrap gap-2 shrink-0">
                             <button type="button" onclick="window.abrirModalNovaContaPagar()" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold">📅 + Conta a Pagar</button>
                             <button type="button" onclick="window.abrirModalTransacao('receita')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold">+ Nova Receita</button>
                             <button type="button" onclick="window.abrirModalTransacao('despesa')" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold">+ Nova Despesa</button>
                         </div>
                     </div>
 
-                    <div id="resumoFiltroExtrato" class="grid grid-cols-3 gap-3 p-3 bg-slate-900/90 rounded-xl border border-slate-800 text-xs"></div>
+                    <!-- Painel de Soma Final do Filtro / Categoria Selecionada -->
+                    <div id="resumoFiltroExtrato" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
@@ -446,12 +458,13 @@
                                     <th class="py-3 px-4">Data</th>
                                     <th class="py-3 px-4">Descrição</th>
                                     <th class="py-3 px-4">Conta / Cartão</th>
-                                    <th class="py-3 px-4">Categoria</th>
+                                    <th class="py-3 px-4">Categoria (Clique p/ filtrar)</th>
                                     <th class="py-3 px-4 text-right">Valor</th>
                                     <th class="py-3 px-4 text-center">Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelaTransacoes" class="divide-y divide-slate-800/70 text-sm"></tbody>
+                            <tfoot id="rodapeSomaTransacoes" class="border-t-2 border-slate-700 bg-slate-900/90"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -462,7 +475,7 @@
                 <div class="flex flex-wrap justify-between items-center gap-4">
                     <div>
                         <h3 class="text-lg font-semibold text-white">💳 Gestão de Cartões de Crédito</h3>
-                        <p class="text-xs text-slate-400">💡 <strong class="text-purple-300">Dica:</strong> Dê um <strong>duplo clique</strong> sobre qualquer cartão abaixo (ou clique em "Ver Fatura") para abrir todos os lançamentos dele!</p>
+                        <p class="text-xs text-slate-400">💡 <strong class="text-purple-300">Dica:</strong> Dê um <strong>duplo clique</strong> sobre qualquer cartão abaixo (ou clique em "Ver Compras") para abrir todos os lançamentos dele!</p>
                     </div>
                     <div class="flex gap-2">
                         <button type="button" onclick="window.abrirModalTransacao('despesa')" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold">+ Lançar Compra no Cartão</button>
@@ -472,7 +485,7 @@
                 <div id="gridCartoesCredito" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
             </div>
 
-            <!-- NOVA ABA INTERNA: DETALHES E EXTRATO COMPLETO DO CARTÃO SELECIONADO -->
+            <!-- ABA INTERNA: DETALHES E EXTRATO COMPLETO DO CARTÃO SELECIONADO -->
             <div id="view-detalhe_cartao" class="hidden space-y-6">
                 <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
                     <div class="flex items-center gap-3">
@@ -533,8 +546,11 @@
                                 🌐 Todas as Compras e Parcelas (Histórico/Futuro)
                             </button>
                         </div>
-                        <div class="w-full md:w-64">
-                            <input type="text" id="buscaDetalheCartao" oninput="window.renderizarDetalheCartao()" placeholder="🔍 Buscar compra neste cartão..." class="w-full px-3 py-2 rounded-xl text-xs">
+                        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                            <select id="filtroCatDetalheCartao" onchange="window.renderizarDetalheCartao()" class="px-3 py-2 rounded-xl text-xs">
+                                <option value="todas">🏷️ Todas as Categorias</option>
+                            </select>
+                            <input type="text" id="buscaDetalheCartao" oninput="window.renderizarDetalheCartao()" placeholder="🔍 Buscar compra..." class="w-full sm:w-52 px-3 py-2 rounded-xl text-xs">
                         </div>
                     </div>
 
@@ -551,6 +567,7 @@
                                 </tr>
                             </thead>
                             <tbody id="tabelaDetalheCartao" class="divide-y divide-slate-800/70 text-sm"></tbody>
+                            <tfoot id="rodapeDetalheCartao" class="border-t-2 border-slate-700 bg-slate-900/90"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -1014,7 +1031,7 @@
         let modoPrivacidade = false;
         let abaAtual = 'dashboard';
         let cartaoDetalheId = null;
-        let modoFiltroDetalheCartao = 'mes'; // 'mes' ou 'todos'
+        let modoFiltroDetalheCartao = 'mes';
         let chartFluxoInstance = null;
         let chartCatInstance = null;
         let timerSync = null;
@@ -1248,6 +1265,7 @@
         };
 
         window.navegar = function(aba) {
+            const mudouTipoExtrato = aba !== abaAtual;
             abaAtual = aba;
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             const navId = aba === 'detalhe_cartao' ? 'nav-cartoes' : `nav-${aba}`;
@@ -1262,9 +1280,9 @@
             const info = {
                 dashboard: ['Visão Geral', 'Painel consolidado de controle financeiro e patrimônio'],
                 contas_pagar: ['Contas a Pagar', 'Gerencie boletos e financiamentos em aberto e escolha o banco ao pagar'],
-                lancamentos: ['Extrato de Lançamentos', 'Histórico de receitas, despesas e compras parceladas'],
-                receitas: ['Minhas Receitas', 'Todas as entradas financeiras do mês'],
-                despesas: ['Minhas Despesas', 'Gastos à vista, fixos e parcelas do mês'],
+                lancamentos: ['Extrato de Lançamentos', 'Filtre por categoria, conta ou status e confira a soma final'],
+                receitas: ['Minhas Receitas', 'Escolha uma categoria de receita (ex: Extra, Salário) para ver os lançamentos e a soma final'],
+                despesas: ['Minhas Despesas', 'Escolha uma categoria de despesa para ver tudo o que saiu e a soma total'],
                 cartoes: ['Cartões de Crédito', 'Dê duplo clique sobre qualquer cartão para abrir todas as compras dele'],
                 detalhe_cartao: ['Fatura e Lançamentos do Cartão', 'Visualização detalhada de todas as compras e parcelas do cartão'],
                 contas: ['Contas Bancárias', 'Saldo individual e edição de contas'],
@@ -1278,6 +1296,11 @@
                 document.getElementById('subtituloPagina').textContent = info[aba][1];
             }
 
+            if (mudouTipoExtrato) {
+                const selCat = document.getElementById('filtroCategoriaExtrato');
+                if (selCat) selCat.value = 'todas';
+            }
+
             if (['lancamentos', 'receitas', 'despesas'].includes(aba)) {
                 document.getElementById('view-transacoes').classList.remove('hidden');
             } else {
@@ -1288,12 +1311,13 @@
             window.atualizarTudo();
         };
 
-        // ABRE A ABA EXCLUSIVA DE LANÇAMENTOS DO CARTÃO AO DAR DUPLO CLIQUE
         window.abrirDetalhesCartao = function(cartaoId) {
             cartaoDetalheId = cartaoId;
             modoFiltroDetalheCartao = 'mes';
             const inputBusca = document.getElementById('buscaDetalheCartao');
             if (inputBusca) inputBusca.value = '';
+            const selCat = document.getElementById('filtroCatDetalheCartao');
+            if (selCat) selCat.value = 'todas';
             window.navegar('detalhe_cartao');
         };
 
@@ -1308,6 +1332,13 @@
 
             const mesFiltro = document.getElementById('filtroMes').value || new Date().toISOString().slice(0, 7);
             const busca = (document.getElementById('buscaDetalheCartao').value || '').toLowerCase();
+            const catFiltro = document.getElementById('filtroCatDetalheCartao').value || 'todas';
+
+            // Popula categorias presentes no cartão
+            const selCatCartao = document.getElementById('filtroCatDetalheCartao');
+            const todasCatsCartao = [...new Set([...categorias.despesa, ...transacoes.filter(t => t.contaId === c.id).map(t => t.categoria)])];
+            selCatCartao.innerHTML = `<option value="todas">🏷️ Todas as Categorias</option>` + todasCatsCartao.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            selCatCartao.value = todasCatsCartao.includes(catFiltro) ? catFiltro : 'todas';
 
             document.getElementById('detCartaoTitulo').textContent = `💳 ${c.nome}`;
             document.getElementById('detCartaoSubtitulo').textContent = `Fecha dia ${c.fechamento || 5} • Vence dia ${c.vencimento || 12}`;
@@ -1347,7 +1378,6 @@
                 btnPagar.classList.add('hidden');
             }
 
-            // Estilo das abas de filtro (Fatura do Mês vs Todos os Lançamentos do Cartão)
             const tabMes = document.getElementById('tabCartaoMes');
             const tabTodos = document.getElementById('tabCartaoTodos');
             if (modoFiltroDetalheCartao === 'mes') {
@@ -1359,6 +1389,9 @@
             }
 
             let listaExibir = modoFiltroDetalheCartao === 'mes' ? [...doMes] : [...todasDoCartao];
+            if (selCatCartao.value !== 'todas') {
+                listaExibir = listaExibir.filter(t => t.categoria === selCatCartao.value);
+            }
             if (busca) {
                 listaExibir = listaExibir.filter(t => t.descricao.toLowerCase().includes(busca) || t.categoria.toLowerCase().includes(busca));
             }
@@ -1366,10 +1399,14 @@
             listaExibir.sort((a, b) => new Date(a.data) - new Date(b.data));
 
             const tbody = document.getElementById('tabelaDetalheCartao');
+            const tfoot = document.getElementById('rodapeDetalheCartao');
             if (!listaExibir.length) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-500">Nenhum lançamento encontrado para este filtro no cartão <strong>${c.nome}</strong>.</td></tr>`;
+                tfoot.innerHTML = '';
                 return;
             }
+
+            const somaCartaoFiltro = listaExibir.reduce((a, b) => a + b.valor, 0);
 
             tbody.innerHTML = listaExibir.map(t => `
                 <tr class="hover:bg-slate-800/40 transition">
@@ -1388,6 +1425,14 @@
                     </td>
                 </tr>
             `).join('');
+
+            tfoot.innerHTML = `
+                <tr>
+                    <td colspan="4" class="py-3.5 px-4 text-right font-bold text-slate-300 text-xs uppercase">Soma Total (${listaExibir.length} itens listados):</td>
+                    <td class="valor-sensivel py-3.5 px-4 text-right font-extrabold text-base text-rose-400">${formatarMoeda(somaCartaoFiltro)}</td>
+                    <td></td>
+                </tr>
+            `;
         };
 
         window.abrirModalTransacaoCartaoEspecifico = function(cartaoId) {
@@ -1934,36 +1979,107 @@
             });
         }
 
+        window.filtrarPorCategoriaRapido = function(catNome) {
+            const sel = document.getElementById('filtroCategoriaExtrato');
+            if (sel) {
+                sel.value = catNome;
+                window.renderizarVisaoTransacoes();
+            }
+        };
+
+        window.limparFiltrosExtrato = function() {
+            document.getElementById('buscaTexto').value = '';
+            document.getElementById('filtroCategoriaExtrato').value = 'todas';
+            document.getElementById('filtroConta').value = 'todas';
+            document.getElementById('filtroStatus').value = 'todos';
+            window.renderizarVisaoTransacoes();
+        };
+
         window.renderizarVisaoTransacoes = function() {
             const mesFiltro = document.getElementById('filtroMes').value;
             const busca = (document.getElementById('buscaTexto').value || '').toLowerCase();
+            const catFiltro = document.getElementById('filtroCategoriaExtrato').value || 'todas';
             const contaFiltro = document.getElementById('filtroConta').value;
             const statusFiltro = document.getElementById('filtroStatus').value;
+
+            // Mostrar ou esconder botão "Limpar Filtros"
+            const temFiltroAtivo = busca !== '' || catFiltro !== 'todas' || contaFiltro !== 'todas' || statusFiltro !== 'todos';
+            document.getElementById('btnLimparFiltrosExtrato').classList.toggle('hidden', !temFiltroAtivo);
 
             let l = transacoes.filter(t => !mesFiltro || t.data.startsWith(mesFiltro));
             if (abaAtual === 'receitas') l = l.filter(t => t.tipo === 'receita');
             if (abaAtual === 'despesas') l = l.filter(t => t.tipo === 'despesa');
+            if (catFiltro !== 'todas') l = l.filter(t => t.categoria === catFiltro);
             if (contaFiltro !== 'todas') l = l.filter(t => t.contaId === contaFiltro);
             if (statusFiltro === 'pago') l = l.filter(t => t.pago);
             if (statusFiltro === 'pendente') l = l.filter(t => !t.pago);
             if (busca) l = l.filter(t => t.descricao.toLowerCase().includes(busca) || t.categoria.toLowerCase().includes(busca));
 
-            const totRec = l.filter(t => t.tipo === 'receita' && t.categoria !== 'Transferência').reduce((a, b) => a + b.valor, 0);
-            const totDesp = l.filter(t => t.tipo === 'despesa' && t.categoria !== 'Transferência').reduce((a, b) => a + b.valor, 0);
+            const totRec = l.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
+            const totDesp = l.filter(t => t.tipo === 'despesa').reduce((a, b) => a + b.valor, 0);
+            const saldoLiquidoFiltro = totRec - totDesp;
+            const tituloCat = catFiltro !== 'todas' ? `(${catFiltro})` : '(Mês)';
+
+            let labelSomaPrincipal = `Saldo Líquido ${tituloCat}`;
+            let valorSomaPrincipal = saldoLiquidoFiltro;
+            let corSomaPrincipal = saldoLiquidoFiltro >= 0 ? 'text-blue-400' : 'text-rose-400';
+
+            if (abaAtual === 'receitas' || (totRec > 0 && totDesp === 0)) {
+                labelSomaPrincipal = `Soma Final Recebida ${tituloCat}`;
+                valorSomaPrincipal = totRec;
+                corSomaPrincipal = 'text-emerald-400';
+            } else if (abaAtual === 'despesas' || (totDesp > 0 && totRec === 0)) {
+                labelSomaPrincipal = `Soma Total de Saídas ${tituloCat}`;
+                valorSomaPrincipal = totDesp;
+                corSomaPrincipal = 'text-rose-400';
+            }
+
             document.getElementById('resumoFiltroExtrato').innerHTML = `
-                <div><span class="text-slate-400">Registros listados:</span> <strong class="text-white">${l.length}</strong></div>
-                <div><span class="text-slate-400">Entradas no filtro:</span> <strong class="valor-sensivel text-emerald-400">${formatarMoeda(totRec)}</strong></div>
-                <div><span class="text-slate-400">Saídas no filtro:</span> <strong class="valor-sensivel text-rose-400">${formatarMoeda(totDesp)}</strong></div>
+                <div class="p-3.5 bg-slate-900/95 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] text-slate-400 uppercase font-semibold block">Lançamentos Listados</span>
+                        <strong class="text-lg font-extrabold text-white">${l.length} item(ns)</strong>
+                    </div>
+                    <span class="text-xl">📑</span>
+                </div>
+                <div class="p-3.5 bg-slate-900/95 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] text-slate-400 uppercase font-semibold block">Total Entradas ${tituloCat}</span>
+                        <strong class="valor-sensivel text-lg font-extrabold text-emerald-400">${formatarMoeda(totRec)}</strong>
+                    </div>
+                    <span class="text-xl">📈</span>
+                </div>
+                <div class="p-3.5 bg-slate-900/95 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] text-slate-400 uppercase font-semibold block">Total Saídas ${tituloCat}</span>
+                        <strong class="valor-sensivel text-lg font-extrabold text-rose-400">${formatarMoeda(totDesp)}</strong>
+                    </div>
+                    <span class="text-xl">📉</span>
+                </div>
+                <div class="p-3.5 bg-slate-900/95 rounded-xl border border-blue-500/40 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] text-blue-300 uppercase font-bold block">${labelSomaPrincipal}</span>
+                        <strong class="valor-sensivel text-lg font-extrabold ${corSomaPrincipal}">${formatarMoeda(valorSomaPrincipal)}</strong>
+                    </div>
+                    <span class="text-xl">🧮</span>
+                </div>
             `;
 
             l.sort((a, b) => new Date(b.data) - new Date(a.data));
             const tbody = document.getElementById('tabelaTransacoes');
-            if (!l.length) { tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">Nenhum lançamento encontrado.</td></tr>`; return; }
+            const tfoot = document.getElementById('rodapeSomaTransacoes');
+
+            if (!l.length) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">Nenhum lançamento encontrado para os filtros selecionados.</td></tr>`;
+                tfoot.innerHTML = '';
+                return;
+            }
 
             tbody.innerHTML = l.map(t => {
                 const c = contas.find(x => x.id === t.contaId);
                 const isC = c && c.tipo === 'credito';
                 const nomeConta = t.contaId === 'a_definir' ? '⏳ A definir no pagamento' : (c ? `${isC ? '💳' : '🏦'} ${c.nome}` : 'Conta');
+                const catEscapada = String(t.categoria).replace(/'/g, "\\'");
                 return `
                     <tr class="hover:bg-slate-800/40 transition">
                         <td class="py-3 px-4">
@@ -1974,7 +2090,11 @@
                         <td class="py-3 px-4 text-slate-300 text-xs">${formatarData(t.data)}</td>
                         <td class="py-3 px-4 font-medium text-white">${t.descricao}</td>
                         <td class="py-3 px-4 text-xs text-slate-300">${nomeConta}</td>
-                        <td class="py-3 px-4"><span class="px-2 py-1 bg-slate-800 rounded text-xs text-slate-300">${t.categoria}</span></td>
+                        <td class="py-3 px-4">
+                            <button type="button" onclick="window.filtrarPorCategoriaRapido('${catEscapada}')" title="Clique para filtrar apenas a categoria ${t.categoria}" class="px-2.5 py-1 bg-slate-800 hover:bg-blue-600/30 hover:border-blue-500/40 border border-slate-700 rounded-lg text-xs text-slate-200 transition">
+                                🏷️ ${t.categoria}
+                            </button>
+                        </td>
                         <td class="valor-sensivel py-3 px-4 text-right font-bold ${t.tipo === 'receita' ? 'text-emerald-400' : 'text-rose-400'}">${t.tipo === 'receita' ? '+' : '-'} ${formatarMoeda(t.valor)}</td>
                         <td class="py-3 px-4 text-center space-x-1">
                             <button type="button" onclick="window.editarTransacao(${t.id})" class="text-slate-400 hover:text-blue-400 px-1.5 py-1">✏️</button>
@@ -1982,9 +2102,21 @@
                         </td>
                     </tr>`;
             }).join('');
+
+            // RODAPÉ DA TABELA COM A SOMA FINAL
+            tfoot.innerHTML = `
+                <tr>
+                    <td colspan="5" class="py-3.5 px-4 text-right font-bold text-slate-200 text-xs uppercase">
+                        🧮 ${labelSomaPrincipal} (${l.length} lançamento${l.length > 1 ? 's' : ''}):
+                    </td>
+                    <td class="valor-sensivel py-3.5 px-4 text-right font-extrabold text-base ${corSomaPrincipal}">
+                        ${formatarMoeda(valorSomaPrincipal)}
+                    </td>
+                    <td></td>
+                </tr>
+            `;
         };
 
-        // RENDERIZAR CARTÕES COM SUPORTE A DUPLO CLIQUE E BOTÃO "VER FATURA / COMPRAS"
         function renderizarCartoes(mesFiltro) {
             const grid = document.getElementById('gridCartoesCredito');
             const cartoes = contas.filter(c => c.tipo === 'credito');
@@ -2167,12 +2299,33 @@
             const t = document.getElementById('formTipo').value;
             document.getElementById('formCategoria').innerHTML = categorias[t].filter(c => c !== 'Transferência').map(c => `<option value="${c}">${c}</option>`).join('');
             document.getElementById('metaCategoriaSelect').innerHTML = categorias.despesa.filter(c => c !== 'Transferência').map(c => `<option value="${c}">${c}</option>`).join('');
+
+            // Popular seletor de categorias do Extrato / Receitas / Despesas
+            const selExtrato = document.getElementById('filtroCategoriaExtrato');
+            if (selExtrato) {
+                const valorAtual = selExtrato.value || 'todas';
+                const catsRec = [...new Set([...categorias.receita, ...transacoes.filter(x => x.tipo === 'receita').map(x => x.categoria)])];
+                const catsDesp = [...new Set([...categorias.despesa, ...transacoes.filter(x => x.tipo === 'despesa').map(x => x.categoria)])];
+
+                let htmlOpcoes = `<option value="todas">🏷️ Todas as Categorias</option>`;
+                if (abaAtual === 'receitas') {
+                    htmlOpcoes += catsRec.map(c => `<option value="${c}">📈 ${c}</option>`).join('');
+                } else if (abaAtual === 'despesas') {
+                    htmlOpcoes += catsDesp.map(c => `<option value="${c}">📉 ${c}</option>`).join('');
+                } else {
+                    htmlOpcoes += `<optgroup label="📈 Categorias de Receita">` + catsRec.map(c => `<option value="${c}">${c}</option>`).join('') + `</optgroup>`;
+                    htmlOpcoes += `<optgroup label="📉 Categorias de Despesa">` + catsDesp.map(c => `<option value="${c}">${c}</option>`).join('') + `</optgroup>`;
+                }
+                selExtrato.innerHTML = htmlOpcoes;
+                const todasValidas = [...catsRec, ...catsDesp];
+                selExtrato.value = todasValidas.includes(valorAtual) ? valorAtual : 'todas';
+            }
         }
 
         function popularSelectsContas() {
             document.getElementById('formConta').innerHTML = `<option value="a_definir">⏳ A definir no pagamento (Conta a Pagar)</option>` + contas.map(c => `<option value="${c.id}">${c.tipo === 'credito' ? '💳' : '🏦'} ${c.nome}</option>`).join('');
             const f = document.getElementById('filtroConta'), at = f.value || 'todas';
-            f.innerHTML = `<option value="todas">Todas as Contas/Cartões</option>` + contas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+            f.innerHTML = `<option value="todas">🏦 Todas as Contas/Cartões</option>` + contas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
             f.value = contas.some(c => c.id === at) ? at : 'todas';
 
             const corr = contas.filter(c => c.tipo === 'corrente').map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
@@ -2399,7 +2552,6 @@
             }
         };
 
-        // MODAL ELEGANTE PARA PAGAR FATURA DO CARTÃO
         window.pagarFatura = function(cartaoId, mesFiltro, valor) {
             const corr = contas.filter(c => c.tipo === 'corrente');
             const cart = contas.find(c => c.id === cartaoId);
